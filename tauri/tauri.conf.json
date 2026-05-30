@@ -12,21 +12,20 @@
     "windows": [
       {
         "title": "main",
-        "width": 700,
-        "height": 65,
+        "width": 750,
+        "height": 450,
         "maxWidth": 750,
         "maxHeight": 450,
         "minWidth": 750,
-        "minHeight": 65,
+        "minHeight": 450,
         "transparent": true,
         "titleBarStyle": "Overlay",
         "hiddenTitle": true,
-        "decorations": true,
         "alwaysOnTop": true,
         "windowEffects": {
           "effects": ["sidebar"],
           "state": "active",
-          "radius": 26
+          "radius": 20
         }
       }
     ],
@@ -45,6 +44,7 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "resources": { "../apps/client/dist": "dist" }
   }
 }

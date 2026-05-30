@@ -9,14 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PopoverIndexRouteImport } from './routes/popover/index'
 import { Route as rootIndexRouteImport } from './routes/(root)/index'
 
-const PopoverIndexRoute = PopoverIndexRouteImport.update({
-  id: '/popover/',
-  path: '/popover/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const rootIndexRoute = rootIndexRouteImport.update({
   id: '/(root)/',
   path: '/',
@@ -25,39 +19,28 @@ const rootIndexRoute = rootIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof rootIndexRoute
-  '/popover': typeof PopoverIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof rootIndexRoute
-  '/popover': typeof PopoverIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(root)/': typeof rootIndexRoute
-  '/popover/': typeof PopoverIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/popover'
+  fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/popover'
-  id: '__root__' | '/(root)/' | '/popover/'
+  to: '/'
+  id: '__root__' | '/(root)/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   rootIndexRoute: typeof rootIndexRoute
-  PopoverIndexRoute: typeof PopoverIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/popover/': {
-      id: '/popover/'
-      path: '/popover'
-      fullPath: '/popover'
-      preLoaderRoute: typeof PopoverIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/(root)/': {
       id: '/(root)/'
       path: '/'
@@ -70,7 +53,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   rootIndexRoute: rootIndexRoute,
-  PopoverIndexRoute: PopoverIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

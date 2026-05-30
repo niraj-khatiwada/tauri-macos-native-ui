@@ -1,7 +1,10 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useRef } from "react";
 
-const appWindow = getCurrentWindow();
+const isTauriEnv =
+  typeof window !== "undefined" && (window as any).__TAURI_INTERNALS__;
+
+const appWindow = isTauriEnv ? getCurrentWindow() : null;
 
 function Titlebar() {
   const titlebarRef = useRef<HTMLDivElement | null>(null);
@@ -12,7 +15,7 @@ function Titlebar() {
         if (evt.detail === 2) {
           // appWindow.toggleMaximize();
         } else {
-          appWindow.startDragging();
+          appWindow?.startDragging();
         }
       }
     }

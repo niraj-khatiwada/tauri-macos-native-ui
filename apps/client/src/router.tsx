@@ -1,29 +1,25 @@
-import { createRouter, RouterProvider } from "@tanstack/react-router";
+import {
+  createHashHistory,
+  createRouter,
+  RouterProvider,
+} from "@tanstack/react-router";
 
 import ReactDOM from "react-dom/client";
 import "./styles.css";
 
 import { routeTree } from "./routeTree.gen";
-import PopoverWindow from "./window/popover";
+import PopoverWindow from "./webviews/popover";
 
 // See `vite.config.ts` for all defined values.
 window.__appVersion = __appVersion;
 window.__envMode = __envMode;
 
-const hash = window.location.hash as "#popover" | undefined;
-let isAppWindow = true;
-if (hash === "#popover") {
-  const rootElement = document.getElementById("popover")!;
-  if (!rootElement.innerHTML) {
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(<PopoverWindow />);
-    isAppWindow = false;
-  }
-}
+const hashHistory = createHashHistory();
 
 const router = createRouter({
   routeTree,
   defaultPreload: "intent",
+  history: hashHistory,
 });
 
 declare module "@tanstack/react-router" {
@@ -32,10 +28,15 @@ declare module "@tanstack/react-router" {
   }
 }
 
-if (isAppWindow) {
-  const rootElement = document.getElementById("app")!;
-  if (!rootElement.innerHTML) {
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(<RouterProvider router={router} />);
-  }
+let defaultRender = <RouterProvider router={router} />;
+
+const hash = window.location.hash as "#popover" | undefined;
+if (hash === "#popover") {
+  defaultRender = <PopoverWindow />;
+}
+
+const rootElement = document.getElementById("app")!;
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(defaultRender);
 }

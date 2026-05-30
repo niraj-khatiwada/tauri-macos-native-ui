@@ -1,11 +1,9 @@
 #[cfg(target_os = "macos")]
 use objc2_app_kit::{NSWindow, NSWindowButton};
-use tauri::Runtime;
-use tauri::WebviewWindow;
 
 // Hide the native traffic light buttons
 #[cfg(target_os = "macos")]
-pub fn hide_traffic_light_buttons<R: Runtime>(window: &WebviewWindow<R>) {
+pub fn hide_traffic_light_buttons(window: &tauri::WebviewWindow<tauri::Wry>) {
     if let Ok(ns_window_ptr) = window.ns_window() {
         unsafe {
             let ns_window = &*(ns_window_ptr as *const NSWindow);
