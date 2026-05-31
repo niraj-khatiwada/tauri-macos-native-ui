@@ -26,24 +26,14 @@ function App() {
     });
   };
 
-  const handleNativePopverWebview = async (evt: any) => {
-    const rect = evt.target.getBoundingClientRect();
-    invoke("open_native_webview_popover", {
-      x: rect.left + rect.width / 2,
-      y: rect.bottom,
-      width: 350,
-      height: 250,
-    });
-  };
-
   const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
 
     invoke("open_native_tooltip", {
       text: "About Menu",
-      keys: "⇧,⌘,K",
+      keys: ["⇧", "⌘", "K"],
       x: rect.left + rect.width / 2,
-      y: rect.top - rect.height,
+      y: rect.top - rect.height - 10,
     });
   };
 
@@ -56,6 +46,9 @@ function App() {
       text: "Copied configuration token to clipboard",
       icon: "doc.on.doc.fill",
       iconHex: "#10B981",
+      // You can also pass toast position
+      // x: 500,
+      // y: 500,
     });
   };
 
@@ -71,22 +64,16 @@ function App() {
     <>
       <div className="h-[50vh] w-screen flex items-center justify-center gap-2 overflow-y-auto text-white">
         <button
-          className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
+          className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit absolute top-4 left-4"
           onClick={handleWindowPopver}
         >
           Window Popver
         </button>
         <button
-          className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
+          className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit absolute top-4 right-4"
           onClick={handleNativePopver}
         >
           Native Popver
-        </button>
-        <button
-          className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
-          onClick={handleNativePopverWebview}
-        >
-          Native Popver Webview
         </button>
       </div>
       <div className="w-full flex items-center justify-center gap-2 text-white text-xs">
