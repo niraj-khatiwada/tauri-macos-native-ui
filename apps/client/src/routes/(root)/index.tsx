@@ -9,10 +9,10 @@ function App() {
   const handleWindowPopver = async (evt: any) => {
     const rect = evt.target.getBoundingClientRect();
     invoke("open_window_popover", {
-      x: rect.left,
+      x: rect.left + rect.width / 2,
       y: rect.bottom,
       width: 350,
-      height: 250,
+      height: 100,
     });
   };
 
