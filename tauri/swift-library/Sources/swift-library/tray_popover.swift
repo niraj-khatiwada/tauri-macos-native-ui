@@ -5,6 +5,7 @@ import Foundation
 private final class TrayPopoverStorage {
     static var popover: NSPopover? = nil
     static var statusButton: NSStatusBarButton? = nil
+    static var delegate: TrayPopoverDelegateHandler? = nil
 }
 
 private struct TraySendablePointers: @unchecked Sendable {
@@ -12,10 +13,19 @@ private struct TraySendablePointers: @unchecked Sendable {
     let button: UnsafeMutableRawPointer
 }
 
+class TrayPopoverDelegateHandler: NSObject, NSPopoverDelegate {
+    func popoverDidShow(_ notification: Notification) {
+        tray_popover_event(.Opened)
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        tray_popover_event(.Closed)
+    }
+}
+
 public func initTrayPopoverManager(
     nsWindowPtr: UnsafeMutableRawPointer,
-    nsStatusBarButtonPtr: UnsafeMutableRawPointer,
-    isFullSizeContent: Bool
+    nsStatusBarButtonPtr: UnsafeMutableRawPointer
 ) {
     let containers = TraySendablePointers(window: nsWindowPtr, button: nsStatusBarButtonPtr)
 
@@ -39,20 +49,20 @@ public func initTrayPopoverManager(
         popover.behavior = .transient
         popover.contentViewController = viewController
         popover.contentSize = window.frame.size
-
-        if isFullSizeContent {
-            popover.hasFullSizeContent = true
-        }
-
+        
+        let delegate = TrayPopoverDelegateHandler()
+        popover.delegate = delegate
+        
         TrayPopoverStorage.popover = popover
         TrayPopoverStorage.statusButton = button
+        TrayPopoverStorage.delegate = delegate
     }
 }
 
 public func openTrayPopover() {
     DispatchQueue.main.async {
         guard let popover = TrayPopoverStorage.popover,
-            let button = TrayPopoverStorage.statusButton
+              let button = TrayPopoverStorage.statusButton
         else { return }
 
         if !popover.isShown {
@@ -79,4 +89,3 @@ public func isTrayPopoverVisible() -> Bool {
         }
     }
 }
-

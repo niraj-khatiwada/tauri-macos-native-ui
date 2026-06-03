@@ -6,12 +6,12 @@ use tauri::{
     AppHandle, Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
 };
 
-// use crate::tray::WindowExt;
+use crate::tray_popover::WindowExt;
 
 mod commands;
 mod domain;
 mod macos_bridge;
-// mod tray;
+mod tray_popover;
 
 static TAURI_APP_HANDLE: Lazy<Mutex<Option<AppHandle>>> = Lazy::new(|| Mutex::new(None));
 
@@ -75,45 +75,42 @@ pub fn run() {
             let tray_window =
                 create_tray_window(&app_handle, tray_window_label).expect("tray window must exist");
 
-            // tray::init(app);
-            // tray_window.to_popover(None);
+            tray_popover::init(app);
+            let _ = tray_window.to_popover();
 
-            // let tray = app
-            //     .tray_by_id(tray_window_label) // tray id from tauri.conf.json
-            //     .expect("tray window must exist");
-
-            // let app_handle_clone = app_handle.clone();
-            // tray.on_tray_icon_event(move |_, event| match event {
-            //     TrayIconEvent::Click {
-            //         button,
-            //         button_state,
-            //         ..
-            //     } => {
-            //         if button == MouseButton::Left && button_state == MouseButtonState::Up {
-            //             let window_option = if let Some(window) =
-            //                 app_handle_clone.get_webview_window(tray_window_label)
-            //             {
-            //                 Some(window)
-            //             } else {
-            //                 // tray was probably suspended -> create new tray window
-            //                 if let Ok(window) = create_tray_window(&app_handle, tray_window_label) {
-            //                     window.to_popover(None);
-            //                     Some(window)
-            //                 } else {
-            //                     None
-            //                 }
-            //             };
-            //             if let Some(window) = window_option {
-            //                 if window.is_tray_popover_visible() {
-            //                     window.close_tray_popover();
-            //                 } else {
-            //                     window.open_tray_popover();
-            //                 }
-            //             }
-            //         }
-            //     }
-            //     _ => {}
-            // });
+            let app_handle_clone = app_handle.clone();
+            let tray = app
+                .tray_by_id(tray_window_label) // tray id from tauri.conf.json
+                .expect("tray window must exist");
+            tray.on_tray_icon_event(move |_, event| match event {
+                TrayIconEvent::Click {
+                    button,
+                    button_state,
+                    ..
+                } => {
+                    if button == MouseButton::Left && button_state == MouseButtonState::Up {
+                        let window_option = if let Some(window) =
+                            app_handle_clone.get_webview_window(tray_window_label)
+                        {
+                            Some(window)
+                        } else {
+                            // tray was probably suspended -> create new tray window
+                            if let Ok(window) =
+                                create_tray_window(&app_handle_clone, tray_window_label)
+                            {
+                                let _ = window.to_popover();
+                                Some(window)
+                            } else {
+                                None
+                            }
+                        };
+                        if let Some(window) = window_option {
+                            let _ = window.toggle_tray_popover();
+                        }
+                    }
+                }
+                _ => {}
+            });
 
             Ok(())
         })

@@ -1,4 +1,4 @@
-// use crate::tray::WindowExt;
+use crate::tray_popover::WindowExt;
 use crate::{domain, macos_bridge};
 use tauri::webview::PageLoadEvent;
 use tauri::{AppHandle, Manager, WebviewWindow};
@@ -26,25 +26,8 @@ pub fn open_window_popover(
 
     let popover_window_label = domain::AppWindow::Popover.as_str();
 
-    if let Some(window) = app_handle.get_webview_window(popover_window_label) {
-        // let app_clone = app_handle.clone();
-        // window.on_window_event(move |event| {
-        //     if let tauri::WindowEvent::Destroyed = event {
-        //         let current_window_clone = current_window.clone();
-        //         let app_deferred = app_clone.clone();
-        //         tauri::async_runtime::spawn(async move {
-        //             create_fresh_popover(
-        //                 &app_deferred,
-        //                 &current_window_clone,
-        //                 target_x,
-        //                 target_y,
-        //                 width,
-        //                 height,
-        //             );
-        //         });
-        //     }
-        // });
-        // let _ = window.destroy();
+    if let Some(_) = app_handle.get_webview_window(popover_window_label) {
+        // Popover widow usually should not exist already since they will be destoyed on close
     } else {
         create_fresh_popover(
             &app_handle,
@@ -230,7 +213,7 @@ pub fn open_native_toast(
 pub fn open_tray_popover(app_handle: AppHandle) {
     match app_handle.get_webview_window(domain::AppWindow::Tray.as_str()) {
         Some(tray_window) => {
-            // tray_window.open_tray_popover();
+            let _ = tray_window.open_tray_popover();
         }
         None => {
             println!("tray window not found");
@@ -242,7 +225,7 @@ pub fn open_tray_popover(app_handle: AppHandle) {
 pub fn close_tray_popover(app_handle: AppHandle, suspend: bool) {
     match app_handle.get_webview_window(domain::AppWindow::Tray.as_str()) {
         Some(tray_window) => {
-            // tray_window.close_tray_popover();
+            let _ = tray_window.close_tray_popover();
             if suspend {
                 let tray_window_label = domain::AppWindow::Tray.as_str();
                 if let Some(window) = app_handle.get_webview_window(&tray_window_label) {
@@ -258,12 +241,12 @@ pub fn close_tray_popover(app_handle: AppHandle, suspend: bool) {
 
 #[tauri::command]
 pub fn is_tray_popover_visible(app_handle: AppHandle) -> bool {
-    // match app_handle.get_webview_window(domain::AppWindow::Tray.as_str()) {
-    //     Some(tray_window) => return tray_window.is_tray_popover_visible(),
-    //     None => {
-    //         println!("tray window not found");
-    //     }
-    // };
+    match app_handle.get_webview_window(domain::AppWindow::Tray.as_str()) {
+        Some(tray_window) => return tray_window.is_tray_popover_visible(),
+        None => {
+            println!("tray window not found");
+        }
+    };
     return false;
 }
 

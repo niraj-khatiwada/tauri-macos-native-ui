@@ -14,6 +14,12 @@ use crate::{domain, TAURI_APP_HANDLE};
 #[swift_bridge::bridge]
 pub mod ffi {
     #[derive(Debug)]
+    enum TrayPopoverEventType {
+        Opened,
+        Closed,
+    }
+
+    #[derive(Debug)]
     enum WindowAsPopoverEventType {
         Opened,
         Closed,
@@ -25,12 +31,23 @@ pub mod ffi {
     }
 
     extern "Rust" {
+        fn tray_popover_event(event_type: TrayPopoverEventType);
+
         fn window_as_popover_event(event_type: WindowAsPopoverEventType);
 
         fn window_as_panel_event(event_type: WindowAsPanelEventType);
     }
 
     extern "Swift" {
+        // tray popover
+        fn initTrayPopoverManager(
+            nsWindowPtr: *mut std::ffi::c_void,
+            nsStatusBarButtonPtr: *mut std::ffi::c_void,
+        );
+        fn openTrayPopover();
+        fn closeTrayPopover();
+        fn isTrayPopoverVisible() -> bool;
+
         // native popover
         fn showNativePopover(x: f64, y: f64);
 
@@ -77,6 +94,11 @@ pub fn hide_traffic_light_buttons(window: &tauri::WebviewWindow<tauri::Wry>) {
             }
         }
     }
+}
+
+// tray popover
+fn tray_popover_event(event_type: ffi::TrayPopoverEventType) {
+    println!("Tray popover event {:?}", event_type)
 }
 
 // native popover
