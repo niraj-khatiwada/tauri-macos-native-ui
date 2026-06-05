@@ -8,6 +8,7 @@ Native macOS UI elements to apply to Tauri to make it look more native.
 - Native Tooltip
 - Native Toast
 - Trackpad Haptic Feedback
+- Apple Intelligence Glow effect using SwiftUI
 
 https://github.com/user-attachments/assets/31f5420c-5e23-4c48-a469-7adb53425049
 
