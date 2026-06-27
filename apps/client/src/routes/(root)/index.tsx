@@ -25,7 +25,11 @@ function App() {
     });
   };
 
-  const handleWindowPanelShow = async (evt: any, panelId: string) => {
+  const handleWindowPanelShow = async (
+    evt: any,
+    panelId: string,
+    liquidGlassEffect = false,
+  ) => {
     const rect = evt.target.getBoundingClientRect();
     invoke("open_window_panel", {
       panelId,
@@ -33,6 +37,7 @@ function App() {
       y: rect.bottom + titlebarHeight,
       width: 500,
       height: 300,
+      liquidGlassEffect,
     });
   };
 
@@ -136,10 +141,12 @@ function App() {
             Hide Window Panel 1
           </button>
           <button
-            onClick={(evt) => handleWindowPanelShow(evt, "2")}
+            onClick={(evt) => handleWindowPanelShow(evt, "2", true)}
             className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
           >
             Show Window Panel 2
+            <br />
+            Liquid Glass
           </button>
 
           <button

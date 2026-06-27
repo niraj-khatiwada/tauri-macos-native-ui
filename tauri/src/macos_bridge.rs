@@ -64,7 +64,13 @@ pub mod ffi {
         fn isWindowAsPopoverVisible() -> bool;
 
         // show any Tauri window as panel
-        fn showWindowAsPanel(id: String, windowRawPtr: *mut std::ffi::c_void, x: f64, y: f64);
+        fn showWindowAsPanel(
+            id: String,
+            windowRawPtr: *mut std::ffi::c_void,
+            x: f64,
+            y: f64,
+            liquidGlassEffect: bool,
+        );
         fn closeWindowAsPanel(id: String);
         fn isWindowAsPanelVisible(id: String) -> bool;
         fn moveWindowAsPanel(id: String, x: f64, y: f64);
@@ -183,10 +189,22 @@ fn window_as_popover_event(event_type: ffi::WindowAsPopoverEventType) {
 
 // show any Tauri window as panel (NSPanel): we can have multiple panels at a time
 #[cfg(target_os = "macos")]
-pub fn show_window_as_panel(panel_id: &str, window: &WebviewWindow, x: f64, y: f64) {
+pub fn show_window_as_panel(
+    panel_id: &str,
+    window: &WebviewWindow,
+    x: f64,
+    y: f64,
+    liquid_glass_effect: Option<bool>,
+) {
     if let Ok(ns_window_ptr) = window.ns_window() {
         let raw_window_ptr = ns_window_ptr as *mut c_void;
-        ffi::showWindowAsPanel(panel_id.to_string(), raw_window_ptr, x, y);
+        ffi::showWindowAsPanel(
+            panel_id.to_string(),
+            raw_window_ptr,
+            x,
+            y,
+            liquid_glass_effect.unwrap_or(false),
+        );
     }
 }
 

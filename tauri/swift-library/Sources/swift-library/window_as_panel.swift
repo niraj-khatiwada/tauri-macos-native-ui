@@ -126,7 +126,10 @@ class WindowAsPanelManager {
         return panel
     }
 
-    func show(id: String, sendablePtr: WindowAsPanelSendableWindowPointer, x: Double, y: Double) {
+    func show(
+        id: String, sendablePtr: WindowAsPanelSendableWindowPointer, x: Double, y: Double,
+        liquidGlassEffect: Bool = false
+    ) {
         let containerExists = WindowAsPanelPanelStorage.activePanels[id] != nil
         var cachedSize: NSSize? = nil
         var trackedOrigin: NSPoint? = nil
@@ -192,33 +195,53 @@ class WindowAsPanelManager {
         let containerView = NSView(frame: NSRect(origin: .zero, size: targetSize))
         containerView.autoresizingMask = [.width, .height]
 
-        let visualEffectView = NSVisualEffectView()
-        visualEffectView.frame = containerView.bounds
-        visualEffectView.autoresizingMask = [.width, .height]
+        let effectView: NSView
 
-        visualEffectView.wantsLayer = true
-        visualEffectView.layer?.masksToBounds = true
-        visualEffectView.layer?.cornerRadius = customCornerRadius
+        if liquidGlassEffect, #available(macOS 26.0, *) {
+            let glassEffectView = NSGlassEffectView()
+            glassEffectView.frame = containerView.bounds
+            glassEffectView.autoresizingMask = [.width, .height]
 
-        visualEffectView.material = .popover
-        visualEffectView.blendingMode = .withinWindow
-        visualEffectView.state = .active
+            glassEffectView.wantsLayer = true
+            glassEffectView.layer?.masksToBounds = true
+            glassEffectView.layer?.cornerRadius = customCornerRadius
 
-        stolenView.frame = visualEffectView.bounds
+            glassEffectView.setValue(9, forKey: "variant")
+            glassEffectView.setValue(0, forKey: "scrimState")
+            glassEffectView.setValue(1, forKey: "subduedState")
+
+            effectView = glassEffectView
+        } else {
+            let visualEffectView = NSVisualEffectView()
+            visualEffectView.frame = containerView.bounds
+            visualEffectView.autoresizingMask = [.width, .height]
+
+            visualEffectView.wantsLayer = true
+            visualEffectView.layer?.masksToBounds = true
+            visualEffectView.layer?.cornerRadius = customCornerRadius
+
+            visualEffectView.material = .popover
+            visualEffectView.blendingMode = .withinWindow
+            visualEffectView.state = .active
+
+            effectView = visualEffectView
+        }
+
+        stolenView.frame = effectView.bounds
         stolenView.autoresizingMask = [.width, .height]
         stolenView.wantsLayer = true
         stolenView.layer?.backgroundColor = NSColor.clear.cgColor
 
-        visualEffectView.addSubview(stolenView)
+        effectView.addSubview(stolenView)
 
         let dragHandle = WindowAsPanelSwiftDragHandleView()
         dragHandle.frame = NSRect(
             x: 0, y: targetSize.height - Self.dragHandleHeight, width: targetSize.width,
             height: Self.dragHandleHeight)
         dragHandle.autoresizingMask = [.width, .minYMargin]
-        visualEffectView.addSubview(dragHandle)
+        effectView.addSubview(dragHandle)
 
-        containerView.addSubview(visualEffectView)
+        containerView.addSubview(effectView)
         panel.contentView = containerView
 
         if let dynamicPos = trackedOrigin {
@@ -301,10 +324,15 @@ class WindowAsPanelManager {
 
         if let sourceWindow = container.sourceWindow {
             if let content = panel.contentView {
-                if let visualEffect = content.subviews.first(where: {
-                    $0.isKind(of: NSVisualEffectView.self)
-                }) {
-                    if let stolenView = visualEffect.subviews.first(where: {
+                let foundEffectView = content.subviews.first { subview in
+                    if #available(macOS 26.0, *), subview.isKind(of: NSGlassEffectView.self) {
+                        return true
+                    }
+                    return subview.isKind(of: NSVisualEffectView.self)
+                }
+
+                if let effectView = foundEffectView {
+                    if let stolenView = effectView.subviews.first(where: {
                         !$0.isKind(of: WindowAsPanelSwiftDragHandleView.self)
                     }) {
                         stolenView.removeFromSuperview()
@@ -350,14 +378,17 @@ class WindowAsPanelManager {
 }
 
 public func showWindowAsPanel(
-    id: RustString, windowRawPtr: UnsafeMutableRawPointer?, x: Double, y: Double
+    id: RustString, windowRawPtr: UnsafeMutableRawPointer?, x: Double, y: Double,
+    liquidGlassEffect: Bool = false
 ) {
     let idStr = id.toString()
     let ptrInt = Int(bitPattern: windowRawPtr)
     let sendableContainer = WindowAsPanelSendableWindowPointer(address: ptrInt)
 
     DispatchQueue.main.async {
-        WindowAsPanelManager.shared.show(id: idStr, sendablePtr: sendableContainer, x: x, y: y)
+        WindowAsPanelManager.shared.show(
+            id: idStr, sendablePtr: sendableContainer, x: x, y: y,
+            liquidGlassEffect: liquidGlassEffect)
     }
 }
 

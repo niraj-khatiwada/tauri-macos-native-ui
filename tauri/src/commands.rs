@@ -101,6 +101,7 @@ pub fn open_window_panel(
     y: f64,
     width: f64,
     height: f64,
+    liquid_glass_effect: Option<bool>,
 ) {
     let position = current_window.outer_position().unwrap();
     let logical_position = position.to_logical::<f64>(current_window.scale_factor().unwrap_or(1.0));
@@ -121,6 +122,7 @@ pub fn open_window_panel(
             target_y,
             width,
             height,
+            liquid_glass_effect,
         );
     }
 }
@@ -133,6 +135,7 @@ fn create_fresh_panel(
     target_y: f64,
     width: f64,
     height: f64,
+    liquid_glass_effect: Option<bool>,
 ) {
     let panel = domain::AppWindow::Panel;
     let panel_window_label = panel.get_panel_window_label_by_id(&panel_id);
@@ -158,7 +161,13 @@ fn create_fresh_panel(
     .inner_size(width, height)
     .on_page_load(move |window, payload| {
         if let PageLoadEvent::Finished = payload.event() {
-            macos_bridge::show_window_as_panel(&panel_id, &window, target_x, target_y);
+            macos_bridge::show_window_as_panel(
+                &panel_id,
+                &window,
+                target_x,
+                target_y,
+                liquid_glass_effect,
+            );
         }
     })
     .build()

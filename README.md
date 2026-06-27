@@ -33,3 +33,8 @@ bun tauri:dev
 ```
 bun tauri:build
 ```
+
+Note: If you're using beta version of XCode, you need to run this command before you run/build your app:
+```
+sudo xcode-select -s /Applications/Xcode-beta.app/Contents/Developer
+```
