@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 export default function PanelWindow({ panelId }: { panelId: string }) {
   const handleClosePanel = () => {
@@ -7,9 +8,25 @@ export default function PanelWindow({ panelId }: { panelId: string }) {
     });
   };
 
+  const handleResizePanel = async () => {
+    const appWindow = getCurrentWindow();
+
+    const [scaleFactor, outerSize] = await Promise.all([
+      appWindow.scaleFactor(),
+      appWindow.outerSize(),
+    ]);
+    const outerSizeLogical = outerSize.toLogical(scaleFactor);
+    console.log(outerSize.toLogical(scaleFactor));
+    invoke("resize_window_panel", {
+      panelId,
+      width: outerSizeLogical.width === 500 ? 800 : 500,
+      height: outerSizeLogical.width === 500 ? 600 : 300,
+    });
+  };
+
   return (
     <>
-      <div className="p-4 w-screen h-screen my-4">
+      <div className="p-4 w-screen h-screen my-4 overflow-auto">
         <h1 className="text-2xl text-center text-white">Pane id @{panelId}</h1>
         <p className="text-white">
           These panels are different than the normal Tauri transparent window.
@@ -22,6 +39,12 @@ export default function PanelWindow({ panelId }: { panelId: string }) {
               The borderglow you see here is created using SwiftUI
             </p>
           ) : null}
+          <button
+            onClick={handleResizePanel}
+            className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
+          >
+            Resize Panel
+          </button>
           <button
             onClick={handleClosePanel}
             className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"

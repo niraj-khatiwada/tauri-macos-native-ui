@@ -131,20 +131,20 @@ function App() {
             onClick={(evt) => handleWindowPanelShow(evt, "1")}
             className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
           >
-            Show Window Panel 1
+            Open Window Panel 1
           </button>
 
           <button
             onClick={() => handleWindowPanelHide("1")}
             className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
           >
-            Hide Window Panel 1
+            Close Window Panel 1
           </button>
           <button
             onClick={(evt) => handleWindowPanelShow(evt, "2", true)}
             className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
           >
-            Show Window Panel 2
+            Open Window Panel 2
             <br />
             Liquid Glass
           </button>
@@ -153,7 +153,7 @@ function App() {
             onClick={() => handleWindowPanelHide("2")}
             className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
           >
-            Hide Window Panel 2
+            Close Window Panel 2
           </button>
         </div>
         <div className="w-full flex items-center justify-center gap-2 text-white text-xs">

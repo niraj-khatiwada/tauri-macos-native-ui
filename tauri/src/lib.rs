@@ -47,6 +47,7 @@ pub fn run() {
             commands::open_window_panel,
             commands::close_window_panel,
             commands::is_window_panel_visible,
+            commands::resize_window_panel,
             commands::open_native_popover,
             commands::open_native_tooltip,
             commands::close_native_tooltip,

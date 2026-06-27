@@ -183,6 +183,11 @@ pub fn is_window_panel_visible(panel_id: String) -> bool {
 }
 
 #[tauri::command]
+pub fn resize_window_panel(panel_id: String, width: f64, height: f64) {
+    macos_bridge::resize_window_as_panel(&panel_id, width, height)
+}
+
+#[tauri::command]
 pub fn close_window_panel(app_handle: AppHandle, panel_id: String) {
     macos_bridge::close_window_as_panel(&panel_id);
 

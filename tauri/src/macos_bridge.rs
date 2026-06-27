@@ -74,6 +74,7 @@ pub mod ffi {
         fn closeWindowAsPanel(id: String);
         fn isWindowAsPanelVisible(id: String) -> bool;
         fn moveWindowAsPanel(id: String, x: f64, y: f64);
+        fn resizeWindowAsPanel(id: String, width: f64, height: f64);
 
         // haptic
         fn triggerTrackpadHaptic(intensity: f64, sharpness: f64);
@@ -221,6 +222,11 @@ pub fn is_window_as_panel_visible(panel_id: &str) -> bool {
 #[cfg(target_os = "macos")]
 pub fn move_window_as_panel(panel_id: &str, x: f64, y: f64) {
     ffi::moveWindowAsPanel(panel_id.to_string(), x, y);
+}
+
+#[cfg(target_os = "macos")]
+pub fn resize_window_as_panel(panel_id: &str, width: f64, height: f64) {
+    ffi::resizeWindowAsPanel(panel_id.to_string(), width, height);
 }
 
 #[cfg(target_os = "macos")]

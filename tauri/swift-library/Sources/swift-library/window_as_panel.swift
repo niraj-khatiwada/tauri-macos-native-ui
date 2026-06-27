@@ -551,28 +551,100 @@ class WindowAsPanelManager {
         return panel
     }
 
-    /// Resizes an active panel smoothly using AppKit's animation engine.
+
+    
+//    func resizePanel(id: String, width: Double, height: Double) {
+//        guard let container = WindowAsPanelPanelStorage.activePanels[id] else { return }
+//        let panel = container.panel
+//        
+//        let newSize = NSSize(width: CGFloat(width), height: CGFloat(height))
+//        container.originalWebviewSize = newSize
+//        
+//        let currentFrame = panel.frame
+//        // Grow/shrink down from the top-left origin natively
+//        let newY = currentFrame.origin.y + (currentFrame.height - newSize.height)
+//        let newPanelRect = NSRect(x: currentFrame.origin.x, y: newY, width: newSize.width, height: newSize.height)
+//        
+//        // Calculate the target frame for the child window (offset by drag handle)
+//        let newSourceWindowRect = NSRect(
+//            x: newPanelRect.origin.x,
+//            y: newPanelRect.origin.y,
+//            width: newPanelRect.width,
+//            height: newPanelRect.height - Self.dragHandleHeight
+//        )
+//        
+//        container.currentPanelOrigin = newPanelRect.origin
+//        
+//        // Explicit fluid layout window transition group syncing both targets
+//        NSAnimationContext.runAnimationGroup { context in
+//            context.duration = 0.25
+//            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+//            
+//            // Animate parent frame boundaries
+//            panel.animator().setFrame(newPanelRect, display: true)
+//            
+//            // Animate child window boundaries at the exact same micro-second
+//            container.sourceWindow?.animator().setFrame(newSourceWindowRect, display: true)
+//        }
+//    }
     func resizePanel(id: String, width: Double, height: Double) {
         guard let container = WindowAsPanelPanelStorage.activePanels[id] else { return }
         let panel = container.panel
-
+        guard let contentView = panel.contentView else { return }
+        
         let newSize = NSSize(width: CGFloat(width), height: CGFloat(height))
         container.originalWebviewSize = newSize
-
+        
         let currentFrame = panel.frame
         // Calculate new origin so the panel grows/shrinks from its top-left point natively
         let newY = currentFrame.origin.y + (currentFrame.height - newSize.height)
-        let newRect = NSRect(x: currentFrame.origin.x, y: newY, width: newSize.width, height: newSize.height)
-
-        // Update local tracking variables
-        container.currentPanelOrigin = newRect.origin
-
-        // Trigger the explicit fluid layout window transition group
-        NSAnimationContext.runAnimationGroup { context in
+        let newPanelRect = NSRect(x: currentFrame.origin.x, y: newY, width: newSize.width, height: newSize.height)
+        
+        let newSourceWindowRect = NSRect(
+            x: newPanelRect.origin.x,
+            y: newPanelRect.origin.y,
+            width: newPanelRect.width,
+            height: newPanelRect.height - Self.dragHandleHeight
+        )
+        
+        container.currentPanelOrigin = newPanelRect.origin
+        
+        // 1. Create and setup the temporary blur overlay view
+        let blurOverlay = NSVisualEffectView(frame: contentView.bounds)
+        blurOverlay.autoresizingMask = [.width, .height]
+        blurOverlay.material = .hudWindow // Dark/Light adaptive sleek system blur
+        blurOverlay.blendingMode = .withinWindow
+        blurOverlay.state = .active
+        blurOverlay.alphaValue = 0.0 // Start invisible
+        
+        // Smoothly match the corner radius setup of your main layout
+        blurOverlay.wantsLayer = true
+        blurOverlay.layer?.cornerRadius = 20.0
+        blurOverlay.layer?.masksToBounds = true
+        
+        contentView.addSubview(blurOverlay, positioned: .above, relativeTo: nil)
+        
+        // 2. Run the animation sequence
+        NSAnimationContext.runAnimationGroup({ context in
             context.duration = 0.25
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            panel.animator().setFrame(newRect, display: true)
-        }
+            
+            // Fade in the blur mask quickly at the beginning
+            blurOverlay.animator().alphaValue = 1.0
+            
+            // Simultaneously animate window frames fluidly
+            panel.animator().setFrame(newPanelRect, display: true)
+            container.sourceWindow?.animator().setFrame(newSourceWindowRect, display: true)
+            
+        }, completionHandler: {
+            // 3. Once resizing finishes, fade out the overlay and clean it up
+            NSAnimationContext.runAnimationGroup({ context in
+                context.duration = 0.15
+                blurOverlay.animator().alphaValue = 0.0
+            }, completionHandler: {
+                blurOverlay.removeFromSuperview()
+            })
+        })
     }
 
     func show(
@@ -780,10 +852,14 @@ class WindowAsPanelManager {
                 }
 
                 if let effectView = foundEffectView {
-                    let internalCanvas = #available(macOS 26.0, *), effectView is NSGlassEffectView
-                        ? (effectView as? NSGlassEffectView)?.contentView
-                        : effectView.subviews.first
-
+                    // Break out the availability check correctly using a standard if-statement
+                    let internalCanvas: NSView?
+                    if #available(macOS 26.0, *), effectView is NSGlassEffectView {
+                        internalCanvas = (effectView as? NSGlassEffectView)?.contentView
+                    } else {
+                        internalCanvas = effectView.subviews.first
+                    }
+                    
                     if let canvas = internalCanvas, let stolenView = canvas.subviews.first(where: {
                         !$0.isKind(of: WindowAsPanelSwiftDragHandleView.self)
                     }) {
