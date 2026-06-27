@@ -38,6 +38,7 @@ const hash = window.location.hash as
   | "#panel"
   | undefined;
 
+console.log(window.location);
 if (hash === "#popover") {
   defaultRender = <PopoverWindow />;
 } else if (hash === "#tray") {

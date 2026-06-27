@@ -183,8 +183,14 @@ pub fn is_window_panel_visible(panel_id: String) -> bool {
 }
 
 #[tauri::command]
-pub fn resize_window_panel(panel_id: String, width: f64, height: f64) {
-    macos_bridge::resize_window_as_panel(&panel_id, width, height)
+pub fn resize_window_panel(
+    panel_id: String,
+    width: f64,
+    height: f64,
+    animate: Option<bool>,
+    blur_overlay_on_resize: Option<bool>,
+) {
+    macos_bridge::resize_window_as_panel(&panel_id, width, height, animate, blur_overlay_on_resize)
 }
 
 #[tauri::command]
@@ -245,6 +251,26 @@ pub fn close_tray_popover(app_handle: AppHandle, suspend: bool) {
                 if let Some(window) = app_handle.get_webview_window(&tray_window_label) {
                     let _ = window.destroy();
                 }
+            }
+        }
+        None => {
+            println!("tray window not found");
+        }
+    };
+}
+
+#[tauri::command]
+pub fn resize_tray_popover(
+    app_handle: AppHandle,
+    width: f64,
+    height: f64,
+    animate: Option<bool>,
+    blur_overlay_on_resize: Option<bool>,
+) {
+    match app_handle.get_webview_window(domain::AppWindow::Tray.as_str()) {
+        Some(tray_window) => {
+            if tray_window.is_tray_popover_visible() {
+                macos_bridge::resize_tray_popover(width, height, animate, blur_overlay_on_resize);
             }
         }
         None => {

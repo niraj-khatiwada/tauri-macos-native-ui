@@ -10,6 +10,15 @@ export default function TrayWindow() {
     });
   };
 
+  const handleResize = () => {
+    invoke("resize_tray_popover", {
+      width: 600,
+      height: 900,
+      animate: true,
+      blurOverlayOnResize: true,
+    });
+  };
+
   const handleFocusMain = async () => {
     await invoke("focus_or_create_main_window");
   };
@@ -25,13 +34,19 @@ export default function TrayWindow() {
     }
   };
   return (
-    <div className="p-4 w-screen h-screen">
+    <div className="p-4 w-screen h-screen overflow-auto">
       <div className="w-full flex flex-col items-center justify-center gap-2 text-white text-xs mt-10">
         <button
           onClick={handleFocusMain}
           className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
         >
           Open/Focus Main Window
+        </button>
+        <button
+          onClick={handleResize}
+          className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
+        >
+          Resize Window
         </button>
         <div className="flex flex-col items-center justify-center mt-10">
           <button
@@ -54,7 +69,7 @@ export default function TrayWindow() {
         </button>
         <button
           onClick={handleQuitApp}
-          className="bg-red-400 px-4 py-1 rounded-md text-xs w-fit absolute right-4 bottom-4"
+          className="bg-red-400 px-4 py-1 rounded-md text-xs w-fit absolute right-6 bottom-6"
         >
           Quit App
         </button>

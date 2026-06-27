@@ -16,21 +16,23 @@ mod tray_popover;
 static TAURI_APP_HANDLE: Lazy<Mutex<Option<AppHandle>>> = Lazy::new(|| Mutex::new(None));
 
 fn create_tray_window(app_handle: &AppHandle, label: &str) -> Result<WebviewWindow, String> {
-    let main_window = app_handle
-        .get_webview_window(domain::AppWindow::Main.as_str())
-        .expect("main window must exist");
+    let tray_url = if let Some(main_window) =
+        app_handle.get_webview_window(domain::AppWindow::Main.as_str())
+    {
+        let mut url = main_window.url().map_err(|err| err.to_string())?;
+        url.set_fragment(Some(label));
+        WebviewUrl::CustomProtocol(url)
+    } else {
+        WebviewUrl::App(format!("index.html#{}", label).into())
+    };
 
-    let mut tray_url = main_window.url().map_err(|err| err.to_string())?;
-    tray_url.set_fragment(Some(label));
-
-    let tray_window =
-        WebviewWindowBuilder::new(app_handle, label, WebviewUrl::CustomProtocol(tray_url))
-            .decorations(false)
-            .transparent(true)
-            .visible(false)
-            .inner_size(400.0, 500.0)
-            .build()
-            .map_err(|err| err.to_string())?;
+    let tray_window = WebviewWindowBuilder::new(app_handle, label, tray_url)
+        .decorations(false)
+        .transparent(true)
+        .visible(false)
+        .inner_size(400.0, 500.0)
+        .build()
+        .map_err(|err| err.to_string())?;
 
     Ok(tray_window)
 }
@@ -56,6 +58,7 @@ pub fn run() {
             commands::open_tray_popover,
             commands::close_tray_popover,
             commands::is_tray_popover_visible,
+            commands::resize_tray_popover,
             commands::show_ai_glow_effect,
             commands::hide_ai_glow_effect,
             commands::focus_or_create_main_window,
@@ -98,17 +101,19 @@ pub fn run() {
                             Some(window)
                         } else {
                             // tray was probably suspended -> create new tray window
-                            if let Ok(window) =
-                                create_tray_window(&app_handle_clone, tray_window_label)
-                            {
-                                let _ = window.to_popover();
-                                Some(window)
-                            } else {
-                                None
+                            match create_tray_window(&app_handle_clone, tray_window_label) {
+                                Ok(window) => match window.to_popover() {
+                                    Ok(_) => Some(window),
+                                    Err(_) => None,
+                                },
+                                Err(_) => None,
                             }
                         };
                         if let Some(window) = window_option {
-                            let _ = window.toggle_tray_popover();
+                            match window.toggle_tray_popover() {
+                                Ok(_) => {}
+                                Err(_) => {}
+                            }
                         }
                     }
                 }

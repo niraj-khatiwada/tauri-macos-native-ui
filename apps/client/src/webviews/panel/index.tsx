@@ -16,11 +16,12 @@ export default function PanelWindow({ panelId }: { panelId: string }) {
       appWindow.outerSize(),
     ]);
     const outerSizeLogical = outerSize.toLogical(scaleFactor);
-    console.log(outerSize.toLogical(scaleFactor));
     invoke("resize_window_panel", {
       panelId,
       width: outerSizeLogical.width === 500 ? 800 : 500,
       height: outerSizeLogical.width === 500 ? 600 : 300,
+      animate: true,
+      blurOverlayOnResize: true,
     });
   };
 

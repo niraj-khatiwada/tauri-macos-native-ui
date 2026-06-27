@@ -47,6 +47,7 @@ pub mod ffi {
         fn openTrayPopover();
         fn closeTrayPopover();
         fn isTrayPopoverVisible() -> bool;
+        fn resizeTrayPopover(width: f64, height: f64, animate: bool, blurOverlayOnResize: bool);
 
         // native popover
         fn showNativePopover(x: f64, y: f64);
@@ -74,7 +75,13 @@ pub mod ffi {
         fn closeWindowAsPanel(id: String);
         fn isWindowAsPanelVisible(id: String) -> bool;
         fn moveWindowAsPanel(id: String, x: f64, y: f64);
-        fn resizeWindowAsPanel(id: String, width: f64, height: f64);
+        fn resizeWindowAsPanel(
+            id: String,
+            width: f64,
+            height: f64,
+            animate: bool,
+            blurOverlayOnResize: bool,
+        );
 
         // haptic
         fn triggerTrackpadHaptic(intensity: f64, sharpness: f64);
@@ -169,6 +176,21 @@ pub fn is_window_as_popover_visible() -> bool {
 }
 
 #[cfg(target_os = "macos")]
+pub fn resize_tray_popover(
+    width: f64,
+    height: f64,
+    animate: Option<bool>,
+    blur_overlay_on_resize: Option<bool>,
+) {
+    ffi::resizeTrayPopover(
+        width,
+        height,
+        animate.unwrap_or(false),
+        blur_overlay_on_resize.unwrap_or(false),
+    )
+}
+
+#[cfg(target_os = "macos")]
 fn window_as_popover_event(event_type: ffi::WindowAsPopoverEventType) {
     println!("Window as popover event {:?}", event_type);
     match event_type {
@@ -225,8 +247,20 @@ pub fn move_window_as_panel(panel_id: &str, x: f64, y: f64) {
 }
 
 #[cfg(target_os = "macos")]
-pub fn resize_window_as_panel(panel_id: &str, width: f64, height: f64) {
-    ffi::resizeWindowAsPanel(panel_id.to_string(), width, height);
+pub fn resize_window_as_panel(
+    panel_id: &str,
+    width: f64,
+    height: f64,
+    animate: Option<bool>,
+    blur_overlay_on_resize: Option<bool>,
+) {
+    ffi::resizeWindowAsPanel(
+        panel_id.to_string(),
+        width,
+        height,
+        animate.unwrap_or(false),
+        blur_overlay_on_resize.unwrap_or(false),
+    );
 }
 
 #[cfg(target_os = "macos")]

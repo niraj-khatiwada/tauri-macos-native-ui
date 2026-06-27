@@ -1,428 +1,3 @@
-// import Cocoa
-
-// struct WindowAsPanelSendableWindowPointer: Sendable {
-//     let address: Int
-
-//     var rawPointer: OpaquePointer {
-//         OpaquePointer(bitPattern: address)!
-//     }
-// }
-
-// @MainActor
-// private final class WindowAsPanelInstanceContainer {
-//     let panel: HoverResponsivePanel
-//     weak var sourceWindow: NSWindow?
-//     var trackingArea: NSTrackingArea?
-//     var originalWebviewSize: NSSize?
-//     var currentPanelOrigin: NSPoint?
-//     var moveObserver: NSObjectProtocol?
-
-//     init(
-//         panel: HoverResponsivePanel, sourceWindow: NSWindow? = nil,
-//         trackingArea: NSTrackingArea? = nil
-//     ) {
-//         self.panel = panel
-//         self.sourceWindow = sourceWindow
-//         self.trackingArea = trackingArea
-//     }
-// }
-
-// @MainActor
-// private final class WindowAsPanelPanelStorage {
-//     static var activePanels: [String: WindowAsPanelInstanceContainer] = [:]
-//     static var isCleaningUp = false
-// }
-
-// class HoverResponsivePanel: NSPanel {
-//     override var canBecomeKey: Bool {
-//         return true
-//     }
-
-//     override var acceptsMouseMovedEvents: Bool {
-//         get { return true }
-//         set {}
-//     }
-// }
-
-// class WindowAsPanelSwiftDragHandleView: NSView {
-//     override func draw(_ dirtyRect: NSRect) {
-//         super.draw(dirtyRect)
-
-//         let pillWidth: CGFloat = 40.0
-//         let pillHeight: CGFloat = 4.0
-
-//         let pillRect = NSRect(
-//             x: (bounds.width - pillWidth) / 2.0,
-//             y: (bounds.height - pillHeight) / 2.0,
-//             width: pillWidth,
-//             height: pillHeight
-//         )
-
-//         let path = NSBezierPath(roundedRect: pillRect, xRadius: 2.0, yRadius: 2.0)
-//         NSColor.secondaryLabelColor.withAlphaComponent(0.4).set()
-//         path.fill()
-//     }
-
-//     override func mouseDown(with event: NSEvent) {
-//         guard let window = self.window else {
-//             super.mouseDown(with: event)
-//             return
-//         }
-
-//         window.performDrag(with: event)
-
-//         if let panel = window as? HoverResponsivePanel {
-//             MainActor.assumeIsolated {
-//                 if let activeContainer = WindowAsPanelPanelStorage.activePanels.values.first(
-//                     where: { $0.panel == panel })
-//                 {
-//                     activeContainer.currentPanelOrigin = panel.frame.origin
-//                 }
-//             }
-//         }
-//     }
-
-//     override func resetCursorRects() {
-//         super.resetCursorRects()
-//         addCursorRect(bounds, cursor: .openHand)
-//     }
-// }
-
-// @MainActor
-// class WindowAsPanelManager {
-//     static let shared = WindowAsPanelManager()
-//     static let dragHandleHeight: CGFloat = 16.0
-
-//     private func getOrCreatePanel(for id: String) -> HoverResponsivePanel {
-//         if let container = WindowAsPanelPanelStorage.activePanels[id] {
-//             return container.panel
-//         }
-
-//         let panel = HoverResponsivePanel(
-//             contentRect: .zero,
-//             styleMask: [.borderless, .nonactivatingPanel],
-//             backing: .buffered,
-//             defer: false
-//         )
-
-//         panel.isOpaque = false
-//         panel.backgroundColor = .clear
-//         panel.hasShadow = true
-//         panel.ignoresMouseEvents = false
-//         panel.isReleasedWhenClosed = false
-//         panel.isMovableByWindowBackground = false
-
-//         panel.hidesOnDeactivate = false
-//         panel.level = .statusBar
-
-//         panel.collectionBehavior = [
-//             .canJoinAllSpaces,
-//             .ignoresCycle,
-//             .stationary,
-//         ]
-
-//         let newContainer = WindowAsPanelInstanceContainer(panel: panel)
-//         WindowAsPanelPanelStorage.activePanels[id] = newContainer
-//         return panel
-//     }
-
-//     func show(
-//         id: String, sendablePtr: WindowAsPanelSendableWindowPointer, x: Double, y: Double,
-//         liquidGlassEffect: Bool = false
-//     ) {
-//         let containerExists = WindowAsPanelPanelStorage.activePanels[id] != nil
-//         var cachedSize: NSSize? = nil
-//         var trackedOrigin: NSPoint? = nil
-
-//         if containerExists {
-//             cachedSize = WindowAsPanelPanelStorage.activePanels[id]?.originalWebviewSize
-//             trackedOrigin = WindowAsPanelPanelStorage.activePanels[id]?.currentPanelOrigin
-//             clearPanelContents(for: id)
-//         }
-
-//         let panel = getOrCreatePanel(for: id)
-//         let rawUnsafe = UnsafeMutableRawPointer(sendablePtr.rawPointer)
-
-//         let sourceWindow = Unmanaged<NSWindow>.fromOpaque(rawUnsafe).takeUnretainedValue()
-
-//         guard let stolenView = sourceWindow.contentView else { return }
-
-//         if let parent = sourceWindow.parent {
-//             parent.removeChildWindow(sourceWindow)
-//         }
-
-//         let placeholder = NSView(frame: stolenView.frame)
-//         sourceWindow.contentView = placeholder
-//         sourceWindow.orderOut(nil)
-
-//         let targetSize: NSSize = cachedSize ?? sourceWindow.frame.size
-
-//         guard let container = WindowAsPanelPanelStorage.activePanels[id] else { return }
-//         container.sourceWindow = sourceWindow
-//         container.originalWebviewSize = targetSize
-
-//         let handleHeight = Self.dragHandleHeight
-//         let frozenWidth = targetSize.width
-//         let frozenHeight = targetSize.height
-
-//         if container.moveObserver == nil {
-//             container.moveObserver = NotificationCenter.default.addObserver(
-//                 forName: NSWindow.didMoveNotification,
-//                 object: panel,
-//                 queue: .main
-//             ) { [weak container] _ in
-//                 Task { @MainActor [weak container] in
-//                     guard let container = container else { return }
-
-//                     container.currentPanelOrigin = container.panel.frame.origin
-
-//                     if let sourceWindow = container.sourceWindow {
-//                         sourceWindow.setFrame(
-//                             NSRect(
-//                                 x: container.panel.frame.origin.x,
-//                                 y: container.panel.frame.origin.y,
-//                                 width: frozenWidth,
-//                                 height: frozenHeight - handleHeight
-//                             ),
-//                             display: true
-//                         )
-//                     }
-//                 }
-//             }
-//         }
-
-//         let customCornerRadius: CGFloat = 20.0
-//         let containerView = NSView(frame: NSRect(origin: .zero, size: targetSize))
-//         containerView.autoresizingMask = [.width, .height]
-
-//         let effectView: NSView
-
-//         if liquidGlassEffect, #available(macOS 26.0, *) {
-//             let glassEffectView = NSGlassEffectView()
-//             glassEffectView.frame = containerView.bounds
-//             glassEffectView.autoresizingMask = [.width, .height]
-
-//             glassEffectView.wantsLayer = true
-//             glassEffectView.layer?.masksToBounds = true
-//             glassEffectView.layer?.cornerRadius = customCornerRadius
-
-//             glassEffectView.setValue(9, forKey: "variant")
-//             glassEffectView.setValue(0, forKey: "scrimState")
-//             glassEffectView.setValue(1, forKey: "subduedState")
-
-//             effectView = glassEffectView
-//         } else {
-//             let visualEffectView = NSVisualEffectView()
-//             visualEffectView.frame = containerView.bounds
-//             visualEffectView.autoresizingMask = [.width, .height]
-
-//             visualEffectView.wantsLayer = true
-//             visualEffectView.layer?.masksToBounds = true
-//             visualEffectView.layer?.cornerRadius = customCornerRadius
-
-//             visualEffectView.material = .popover
-//             visualEffectView.blendingMode = .withinWindow
-//             visualEffectView.state = .active
-
-//             effectView = visualEffectView
-//         }
-
-//         stolenView.frame = effectView.bounds
-//         stolenView.autoresizingMask = [.width, .height]
-//         stolenView.wantsLayer = true
-//         stolenView.layer?.backgroundColor = NSColor.clear.cgColor
-
-//         effectView.addSubview(stolenView)
-
-//         let dragHandle = WindowAsPanelSwiftDragHandleView()
-//         dragHandle.frame = NSRect(
-//             x: 0, y: targetSize.height - Self.dragHandleHeight, width: targetSize.width,
-//             height: Self.dragHandleHeight)
-//         dragHandle.autoresizingMask = [.width, .minYMargin]
-//         effectView.addSubview(dragHandle)
-
-//         containerView.addSubview(effectView)
-//         panel.contentView = containerView
-
-//         if let dynamicPos = trackedOrigin {
-//             panel.setFrame(
-//                 NSRect(origin: dynamicPos, size: targetSize), display: true, animate: false)
-//             container.currentPanelOrigin = dynamicPos
-//         } else {
-//             guard let primaryScreen = sourceWindow.screen ?? NSScreen.main else { return }
-//             let screenFrame = primaryScreen.frame
-
-//             let panelX = screenFrame.origin.x + CGFloat(x)
-//             let panelY =
-//                 screenFrame.origin.y + (screenFrame.size.height - CGFloat(y)) - targetSize.height
-
-//             let panelRect = NSRect(origin: NSPoint(x: panelX, y: panelY), size: targetSize)
-//             panel.setFrame(panelRect, display: true, animate: false)
-//             container.currentPanelOrigin = panelRect.origin
-//         }
-
-//         sourceWindow.styleMask = [.borderless]
-//         sourceWindow.isOpaque = false
-//         sourceWindow.backgroundColor = .clear
-//         sourceWindow.hasShadow = false
-//         sourceWindow.setFrame(
-//             NSRect(
-//                 x: panel.frame.origin.x, y: panel.frame.origin.y, width: targetSize.width,
-//                 height: targetSize.height - Self.dragHandleHeight), display: true)
-//         panel.addChildWindow(sourceWindow, ordered: .below)
-
-//         panel.orderFrontRegardless()
-//         panel.makeKey()
-//         panel.invalidateShadow()
-
-//         let trackingArea = NSTrackingArea(
-//             rect: containerView.bounds,
-//             options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways, .inVisibleRect],
-//             owner: containerView,
-//             userInfo: nil
-//         )
-//         containerView.addTrackingArea(trackingArea)
-//         container.trackingArea = trackingArea
-
-//         WindowAsPanelPanelStorage.isCleaningUp = false
-//         window_as_panel_event(.Opened(panel_id: RustString(id)))
-//     }
-
-//     func movePanel(id: String, x: Double, y: Double) {
-//         guard let container = WindowAsPanelPanelStorage.activePanels[id] else { return }
-//         let panel = container.panel
-
-//         guard let primaryScreen = panel.screen ?? NSScreen.main else { return }
-//         let screenFrame = primaryScreen.frame
-//         let targetSize = panel.frame.size
-
-//         let panelX = screenFrame.origin.x + CGFloat(x)
-//         let panelY =
-//             screenFrame.origin.y + (screenFrame.size.height - CGFloat(y)) - targetSize.height
-
-//         let panelRect = NSRect(origin: NSPoint(x: panelX, y: panelY), size: targetSize)
-//         panel.setFrame(panelRect, display: true, animate: false)
-
-//         container.currentPanelOrigin = panelRect.origin
-
-//         if let sourceWindow = container.sourceWindow {
-//             sourceWindow.setFrame(
-//                 NSRect(
-//                     x: panelX, y: panelY, width: targetSize.width,
-//                     height: targetSize.height - Self.dragHandleHeight), display: true)
-//         }
-//     }
-
-//     private func clearPanelContents(for id: String) {
-//         guard let container = WindowAsPanelPanelStorage.activePanels[id] else { return }
-//         let panel = container.panel
-
-//         if let observer = container.moveObserver {
-//             NotificationCenter.default.removeObserver(observer)
-//             container.moveObserver = nil
-//         }
-
-//         if let sourceWindow = container.sourceWindow {
-//             if let content = panel.contentView {
-//                 let foundEffectView = content.subviews.first { subview in
-//                     if #available(macOS 26.0, *), subview.isKind(of: NSGlassEffectView.self) {
-//                         return true
-//                     }
-//                     return subview.isKind(of: NSVisualEffectView.self)
-//                 }
-
-//                 if let effectView = foundEffectView {
-//                     if let stolenView = effectView.subviews.first(where: {
-//                         !$0.isKind(of: WindowAsPanelSwiftDragHandleView.self)
-//                     }) {
-//                         stolenView.removeFromSuperview()
-//                         sourceWindow.contentView = stolenView
-//                     }
-//                 }
-//             }
-//             panel.removeChildWindow(sourceWindow)
-//             sourceWindow.orderOut(nil)
-//         }
-
-//         if let content = panel.contentView {
-//             if let tracking = container.trackingArea {
-//                 content.removeTrackingArea(tracking)
-//                 container.trackingArea = nil
-//             }
-
-//             for subview in content.subviews {
-//                 subview.removeFromSuperview()
-//             }
-//         }
-//         panel.contentView = nil
-//     }
-
-//     func closePanel(id: String) {
-//         guard !WindowAsPanelPanelStorage.isCleaningUp,
-//             let container = WindowAsPanelPanelStorage.activePanels[id],
-//             container.panel.isVisible
-//         else { return }
-
-//         WindowAsPanelPanelStorage.isCleaningUp = true
-
-//         let panel = container.panel
-//         panel.orderOut(nil)
-
-//         clearPanelContents(for: id)
-
-//         WindowAsPanelPanelStorage.activePanels.removeValue(forKey: id)
-//         WindowAsPanelPanelStorage.isCleaningUp = false
-
-//         window_as_panel_event(.Closed(panel_id: RustString(id)))
-//     }
-// }
-
-// public func showWindowAsPanel(
-//     id: RustString, windowRawPtr: UnsafeMutableRawPointer?, x: Double, y: Double,
-//     liquidGlassEffect: Bool = false
-// ) {
-//     let idStr = id.toString()
-//     let ptrInt = Int(bitPattern: windowRawPtr)
-//     let sendableContainer = WindowAsPanelSendableWindowPointer(address: ptrInt)
-
-//     DispatchQueue.main.async {
-//         WindowAsPanelManager.shared.show(
-//             id: idStr, sendablePtr: sendableContainer, x: x, y: y,
-//             liquidGlassEffect: liquidGlassEffect)
-//     }
-// }
-
-// public func moveWindowAsPanel(id: RustString, x: Double, y: Double) {
-//     let idStr = id.toString()
-//     DispatchQueue.main.async {
-//         WindowAsPanelManager.shared.movePanel(id: idStr, x: x, y: y)
-//     }
-// }
-
-// public func closeWindowAsPanel(id: RustString) {
-//     let idStr = id.toString()
-
-//     DispatchQueue.main.async {
-//         WindowAsPanelManager.shared.closePanel(id: idStr)
-//     }
-// }
-
-// public func isWindowAsPanelVisible(id: RustString) -> Bool {
-//     let idStr = id.toString()
-
-//     if Thread.isMainThread {
-//         return MainActor.assumeIsolated {
-//             WindowAsPanelPanelStorage.activePanels[idStr]?.panel.isVisible ?? false
-//         }
-//     } else {
-//         return DispatchQueue.main.sync {
-//             return MainActor.assumeIsolated {
-//                 WindowAsPanelPanelStorage.activePanels[idStr]?.panel.isVisible ?? false
-//             }
-//         }
-//     }
-// }
-
 import Cocoa
 
 struct WindowAsPanelSendableWindowPointer: Sendable {
@@ -517,6 +92,7 @@ class WindowAsPanelSwiftDragHandleView: NSView {
 class WindowAsPanelManager {
     static let shared = WindowAsPanelManager()
     static let dragHandleHeight: CGFloat = 16.0
+    static let cornerRadius: CGFloat = 20.0
 
     private func getOrCreatePanel(for id: String) -> HoverResponsivePanel {
         if let container = WindowAsPanelPanelStorage.activePanels[id] {
@@ -551,100 +127,94 @@ class WindowAsPanelManager {
         return panel
     }
 
-
-    
-//    func resizePanel(id: String, width: Double, height: Double) {
-//        guard let container = WindowAsPanelPanelStorage.activePanels[id] else { return }
-//        let panel = container.panel
-//        
-//        let newSize = NSSize(width: CGFloat(width), height: CGFloat(height))
-//        container.originalWebviewSize = newSize
-//        
-//        let currentFrame = panel.frame
-//        // Grow/shrink down from the top-left origin natively
-//        let newY = currentFrame.origin.y + (currentFrame.height - newSize.height)
-//        let newPanelRect = NSRect(x: currentFrame.origin.x, y: newY, width: newSize.width, height: newSize.height)
-//        
-//        // Calculate the target frame for the child window (offset by drag handle)
-//        let newSourceWindowRect = NSRect(
-//            x: newPanelRect.origin.x,
-//            y: newPanelRect.origin.y,
-//            width: newPanelRect.width,
-//            height: newPanelRect.height - Self.dragHandleHeight
-//        )
-//        
-//        container.currentPanelOrigin = newPanelRect.origin
-//        
-//        // Explicit fluid layout window transition group syncing both targets
-//        NSAnimationContext.runAnimationGroup { context in
-//            context.duration = 0.25
-//            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-//            
-//            // Animate parent frame boundaries
-//            panel.animator().setFrame(newPanelRect, display: true)
-//            
-//            // Animate child window boundaries at the exact same micro-second
-//            container.sourceWindow?.animator().setFrame(newSourceWindowRect, display: true)
-//        }
-//    }
-    func resizePanel(id: String, width: Double, height: Double) {
+    func resizePanel(
+        id: String, width: Double, height: Double, animate: Bool = false,
+        blurOverlayOnResize: Bool = false
+    ) {
         guard let container = WindowAsPanelPanelStorage.activePanels[id] else { return }
         let panel = container.panel
         guard let contentView = panel.contentView else { return }
-        
+
         let newSize = NSSize(width: CGFloat(width), height: CGFloat(height))
+
+        if abs(panel.frame.width - newSize.width) < 0.1
+            && abs(panel.frame.height - newSize.height) < 0.1
+        {
+            return
+        }
+
         container.originalWebviewSize = newSize
-        
+
         let currentFrame = panel.frame
-        // Calculate new origin so the panel grows/shrinks from its top-left point natively
-        let newY = currentFrame.origin.y + (currentFrame.height - newSize.height)
-        let newPanelRect = NSRect(x: currentFrame.origin.x, y: newY, width: newSize.width, height: newSize.height)
-        
+        let centerX = currentFrame.origin.x + (currentFrame.width / 2.0)
+        let centerY = currentFrame.origin.y + (currentFrame.height / 2.0)
+
+        let newX = centerX - (newSize.width / 2.0)
+        let newY = centerY - (newSize.height / 2.0)
+
+        let newPanelRect = NSRect(x: newX, y: newY, width: newSize.width, height: newSize.height)
         let newSourceWindowRect = NSRect(
             x: newPanelRect.origin.x,
             y: newPanelRect.origin.y,
             width: newPanelRect.width,
             height: newPanelRect.height - Self.dragHandleHeight
         )
-        
+
         container.currentPanelOrigin = newPanelRect.origin
-        
-        // 1. Create and setup the temporary blur overlay view
-        let blurOverlay = NSVisualEffectView(frame: contentView.bounds)
-        blurOverlay.autoresizingMask = [.width, .height]
-        blurOverlay.material = .hudWindow // Dark/Light adaptive sleek system blur
-        blurOverlay.blendingMode = .withinWindow
-        blurOverlay.state = .active
-        blurOverlay.alphaValue = 0.0 // Start invisible
-        
-        // Smoothly match the corner radius setup of your main layout
-        blurOverlay.wantsLayer = true
-        blurOverlay.layer?.cornerRadius = 20.0
-        blurOverlay.layer?.masksToBounds = true
-        
-        contentView.addSubview(blurOverlay, positioned: .above, relativeTo: nil)
-        
-        // 2. Run the animation sequence
-        NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.25
-            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-            
-            // Fade in the blur mask quickly at the beginning
-            blurOverlay.animator().alphaValue = 1.0
-            
-            // Simultaneously animate window frames fluidly
-            panel.animator().setFrame(newPanelRect, display: true)
-            container.sourceWindow?.animator().setFrame(newSourceWindowRect, display: true)
-            
-        }, completionHandler: {
-            // 3. Once resizing finishes, fade out the overlay and clean it up
-            NSAnimationContext.runAnimationGroup({ context in
-                context.duration = 0.15
-                blurOverlay.animator().alphaValue = 0.0
-            }, completionHandler: {
-                blurOverlay.removeFromSuperview()
+
+        var temporaryBlur: NSVisualEffectView? = nil
+        if blurOverlayOnResize {
+            let blur = NSVisualEffectView(frame: contentView.bounds)
+            blur.identifier = NSUserInterfaceItemIdentifier("WindowAsPanel.TemporaryBlurOverlay")
+            blur.autoresizingMask = [.width, .height]
+            blur.material = .sidebar
+            blur.blendingMode = .behindWindow
+            blur.state = .active
+            blur.alphaValue = 1.0
+
+            blur.wantsLayer = true
+            blur.layer?.cornerRadius = Self.cornerRadius
+            blur.layer?.masksToBounds = true
+
+            contentView.addSubview(blur, positioned: .above, relativeTo: nil)
+            temporaryBlur = blur
+        }
+
+        let stableBlurReference = temporaryBlur
+        let duration = animate ? 0.3 : 0.0
+
+        NSAnimationContext.runAnimationGroup(
+            { context in
+                context.duration = duration
+                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+
+                if animate {
+                    panel.animator().setFrame(newPanelRect, display: true)
+                    container.sourceWindow?.animator().setFrame(newSourceWindowRect, display: true)
+                } else {
+                    panel.setFrame(newPanelRect, display: true)
+                    container.sourceWindow?.setFrame(newSourceWindowRect, display: true)
+                }
+
+            },
+            completionHandler: {
+                Task { @MainActor [stableBlurReference] in
+                    if let blur = stableBlurReference {
+                        try? await Task.sleep(nanoseconds: 200_000_000)  // 0.2s delay
+
+                        NSAnimationContext.runAnimationGroup(
+                            { context in
+                                context.duration = 0.3
+                                blur.animator().alphaValue = 0.0
+                            },
+                            completionHandler: {
+                                Task { @MainActor [blur] in
+                                    blur.removeFromSuperview()
+                                }
+                            })
+                    }
+                }
             })
-        })
     }
 
     func show(
@@ -711,7 +281,6 @@ class WindowAsPanelManager {
             }
         }
 
-        let customCornerRadius: CGFloat = 20.0
         let containerView = NSView(frame: NSRect(origin: .zero, size: targetSize))
         containerView.autoresizingMask = [.width, .height]
 
@@ -723,7 +292,7 @@ class WindowAsPanelManager {
             let glassEffectView = NSGlassEffectView()
             glassEffectView.frame = containerView.bounds
             glassEffectView.autoresizingMask = [.width, .height]
-            glassEffectView.cornerRadius = customCornerRadius
+            glassEffectView.cornerRadius = Self.cornerRadius
 
             glassEffectView.setValue(9, forKey: "variant")
             glassEffectView.setValue(0, forKey: "scrimState")
@@ -738,7 +307,7 @@ class WindowAsPanelManager {
 
             visualEffectView.wantsLayer = true
             visualEffectView.layer?.masksToBounds = true
-            visualEffectView.layer?.cornerRadius = customCornerRadius
+            visualEffectView.layer?.cornerRadius = Self.cornerRadius
 
             visualEffectView.material = .popover
             visualEffectView.blendingMode = .withinWindow
@@ -845,6 +414,9 @@ class WindowAsPanelManager {
         if let sourceWindow = container.sourceWindow {
             if let content = panel.contentView {
                 let foundEffectView = content.subviews.first { subview in
+                    if subview.identifier?.rawValue == "WindowAsPanel.TemporaryBlurOverlay" {
+                        return false
+                    }
                     if #available(macOS 26.0, *), subview.isKind(of: NSGlassEffectView.self) {
                         return true
                     }
@@ -852,17 +424,20 @@ class WindowAsPanelManager {
                 }
 
                 if let effectView = foundEffectView {
-                    // Break out the availability check correctly using a standard if-statement
                     let internalCanvas: NSView?
                     if #available(macOS 26.0, *), effectView is NSGlassEffectView {
                         internalCanvas = (effectView as? NSGlassEffectView)?.contentView
                     } else {
-                        internalCanvas = effectView.subviews.first
+                        internalCanvas = effectView.subviews.first {
+                            !$0.isKind(of: NSVisualEffectView.self)
+                        }
                     }
-                    
-                    if let canvas = internalCanvas, let stolenView = canvas.subviews.first(where: {
-                        !$0.isKind(of: WindowAsPanelSwiftDragHandleView.self)
-                    }) {
+
+                    if let canvas = internalCanvas,
+                        let stolenView = canvas.subviews.first(where: {
+                            !$0.isKind(of: WindowAsPanelSwiftDragHandleView.self)
+                        })
+                    {
                         stolenView.removeFromSuperview()
                         sourceWindow.contentView = stolenView
                     }
@@ -927,10 +502,15 @@ public func moveWindowAsPanel(id: RustString, x: Double, y: Double) {
     }
 }
 
-public func resizeWindowAsPanel(id: RustString, width: Double, height: Double) {
+public func resizeWindowAsPanel(
+    id: RustString, width: Double, height: Double, animate: Bool = false,
+    blurOverlayOnResize: Bool = false
+) {
     let idStr = id.toString()
     DispatchQueue.main.async {
-        WindowAsPanelManager.shared.resizePanel(id: idStr, width: width, height: height)
+        WindowAsPanelManager.shared.resizePanel(
+            id: idStr, width: width, height: height, animate: animate,
+            blurOverlayOnResize: blurOverlayOnResize)
     }
 }
 

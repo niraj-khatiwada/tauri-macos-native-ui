@@ -42,6 +42,10 @@ public func initTrayPopoverManager(
         let button = Unmanaged<NSStatusBarButton>.fromOpaque(containers.button)
             .takeUnretainedValue()
 
+        window.styleMask = []
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+
         guard let stolenView = window.contentView else { return }
 
         stolenView.wantsLayer = true
@@ -55,20 +59,24 @@ public func initTrayPopoverManager(
 
         let hostingContainerView = NSView(frame: NSRect(origin: .zero, size: targetSize))
         hostingContainerView.wantsLayer = true
+        hostingContainerView.layer?.backgroundColor = NSColor.clear.cgColor
         hostingContainerView.autoresizingMask = [.width, .height]
 
-        let visualEffectView = NSVisualEffectView(frame: hostingContainerView.bounds)
-        visualEffectView.autoresizingMask = [.width, .height]
-        visualEffectView.material = .popover
-        visualEffectView.blendingMode = .withinWindow
-        visualEffectView.state = .active
-        visualEffectView.wantsLayer = true
+        let containerView = NSView(frame: NSRect(origin: .zero, size: targetSize))
+        containerView.wantsLayer = true
+        containerView.layer?.backgroundColor = NSColor.clear.cgColor
+        containerView.autoresizingMask = [.width, .height]
 
-        stolenView.frame = visualEffectView.bounds
+        stolenView.frame = NSRect(origin: .zero, size: targetSize)
         stolenView.autoresizingMask = [.width, .height]
+        stolenView.subviews.forEach { subview in
+            subview.translatesAutoresizingMaskIntoConstraints = true
+            subview.autoresizingMask = [.width, .height]
+            subview.frame = NSRect(origin: .zero, size: targetSize)
+        }
 
-        visualEffectView.addSubview(stolenView)
-        hostingContainerView.addSubview(visualEffectView)
+        containerView.addSubview(stolenView)
+        hostingContainerView.addSubview(containerView)
 
         let viewController = NSViewController()
         viewController.view = hostingContainerView
@@ -77,6 +85,16 @@ public func initTrayPopoverManager(
         popover.behavior = .transient
         popover.contentViewController = viewController
         popover.contentSize = targetSize
+        popover.animates = true
+        popover.hasFullSizeContent = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if let popoverWindow = popover.contentViewController?.view.window {
+                popoverWindow.backgroundColor = .clear
+                popoverWindow.isOpaque = false
+                popoverWindow.level = .statusBar
+            }
+        }
 
         let delegate = TrayPopoverDelegateHandler()
         popover.delegate = delegate
@@ -114,6 +132,144 @@ public func isTrayPopoverVisible() -> Bool {
     } else {
         return DispatchQueue.main.sync {
             return MainActor.assumeIsolated { TrayPopoverStorage.popover?.isShown ?? false }
+        }
+    }
+}
+
+@MainActor
+private func resizeSubviewsRecursively(_ view: NSView, to size: NSSize) {
+    view.translatesAutoresizingMaskIntoConstraints = true
+
+    CATransaction.begin()
+    CATransaction.setDisableActions(true)
+    view.frame = NSRect(origin: .zero, size: size)
+    CATransaction.commit()
+
+    for subview in view.subviews {
+        resizeSubviewsRecursively(subview, to: size)
+    }
+}
+
+public func resizeTrayPopover(
+    width: Double, height: Double, animate: Bool = false, blurOverlayOnResize: Bool = false
+) {
+    Task { @MainActor in
+        guard let popover = TrayPopoverStorage.popover,
+            let viewController = popover.contentViewController
+        else { return }
+
+        let newSize = NSSize(width: CGFloat(width), height: CGFloat(height))
+        if abs(popover.contentSize.width - newSize.width) < 0.1
+            && abs(popover.contentSize.height - newSize.height) < 0.1
+        {
+            return
+        }
+
+        let contentView = viewController.view
+        let targetRect = NSRect(origin: .zero, size: newSize)
+
+        guard let containerView = contentView.subviews.first,
+            let stolenView = containerView.subviews.first
+        else { return }
+
+        contentView.translatesAutoresizingMaskIntoConstraints = true
+        containerView.translatesAutoresizingMaskIntoConstraints = true
+        stolenView.translatesAutoresizingMaskIntoConstraints = true
+
+        var temporaryBlur: NSVisualEffectView? = nil
+        if blurOverlayOnResize {
+            let blur = NSVisualEffectView(frame: containerView.bounds)
+            blur.autoresizingMask = [.width, .height]
+            blur.material = .sidebar
+            blur.blendingMode = .behindWindow
+            blur.state = .active
+            blur.alphaValue = 1.0
+            blur.wantsLayer = true
+            blur.layer?.cornerRadius = 20.0
+            blur.layer?.masksToBounds = true
+
+            containerView.addSubview(blur, positioned: .above, relativeTo: nil)
+            temporaryBlur = blur
+        }
+
+        let stableBlurReference = temporaryBlur
+
+        containerView.wantsLayer = true
+        containerView.layer?.shouldRasterize = true
+        containerView.layer?.rasterizationScale = NSScreen.main?.backingScaleFactor ?? 2.0
+
+        NSAnimationContext.beginGrouping()
+        NSAnimationContext.current.duration = 0
+        resizeSubviewsRecursively(stolenView, to: newSize)
+        NSAnimationContext.endGrouping()
+
+        popover.animates = false
+        let duration = animate ? 0.25 : 0.0
+
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = duration
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+
+            if let popoverWindow = contentView.window {
+                let currentFrame = popoverWindow.frame
+                let deltaWidth = newSize.width - currentFrame.width
+                let deltaHeight = newSize.height - currentFrame.height
+                let newWindowFrame = NSRect(
+                    x: currentFrame.origin.x - (deltaWidth / 2.0),
+                    y: currentFrame.origin.y - deltaHeight,
+                    width: newSize.width,
+                    height: newSize.height
+                )
+
+                if animate {
+                    popoverWindow.animator().setFrame(newWindowFrame, display: true)
+                } else {
+                    popoverWindow.setFrame(newWindowFrame, display: true)
+                }
+            }
+
+            if animate {
+                contentView.animator().frame = targetRect
+                containerView.animator().frame = targetRect
+                stolenView.animator().frame = targetRect
+            } else {
+                contentView.frame = targetRect
+                containerView.frame = targetRect
+                stolenView.frame = targetRect
+            }
+
+        } completionHandler: {
+            Task { @MainActor [stableBlurReference] in
+                popover.animates = false
+                popover.contentSize = newSize
+                contentView.frame = targetRect
+                containerView.frame = targetRect
+
+                NSAnimationContext.beginGrouping()
+                NSAnimationContext.current.duration = 0
+                resizeSubviewsRecursively(stolenView, to: newSize)
+                NSAnimationContext.endGrouping()
+
+                if let blur = stableBlurReference {
+                    try? await Task.sleep(nanoseconds: 200_000_000)  // 0.2s delay
+
+                    NSAnimationContext.runAnimationGroup { context in
+                        context.duration = 0.15
+                        blur.animator().alphaValue = 0.0
+                    } completionHandler: {
+                        Task { @MainActor [blur] in
+                            blur.removeFromSuperview()
+                            containerView.layer?.shouldRasterize = false
+                            contentView.needsDisplay = true
+                            stolenView.needsDisplay = true
+                        }
+                    }
+                } else {
+                    containerView.layer?.shouldRasterize = false
+                    contentView.needsDisplay = true
+                    stolenView.needsDisplay = true
+                }
+            }
         }
     }
 }

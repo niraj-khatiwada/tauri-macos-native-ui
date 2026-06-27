@@ -35,7 +35,7 @@ fn main() {
         );
         println!("cargo:rustc-link-search={}", "/usr/lib/swift");
         println!("cargo:rustc-link-arg=-Wl,-rpath,/usr/lib/swift");
-        println!("cargo:rustc-link-arg=-Wl,-rpath,/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx");
+        println!("cargo:rustc-link-arg=-Wl,-rpath,{}/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx", &xcode_path);
 
         tauri_build::build()
     }
@@ -63,10 +63,12 @@ fn compile_swift() {
         Ok(output) => {
             if !output.status.success() {
                 panic!(
-                    "\n🛑 SWIFT COMPILATION FAILED! 🛑\n\nStdout:\n{}\n\nStderr:\n{}\n",
+                    "\n🛑SWIFT COMPILATION FAILED!\n\nStdout:\n{}\n\nStderr:\n{}\n",
                     String::from_utf8_lossy(&output.stdout),
                     String::from_utf8_lossy(&output.stderr)
                 );
+            } else {
+                print!("\n✅ SWIFT COMPILATION SUCCEEDED!\n")
             }
         }
         Err(e) => {
