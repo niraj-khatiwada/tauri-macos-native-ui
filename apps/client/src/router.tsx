@@ -11,6 +11,7 @@ import { routeTree } from "./routeTree.gen";
 import PopoverWindow from "./webviews/popover";
 import TrayWindow from "./webviews/tray";
 import PanelWindow from "./webviews/panel";
+import ModalWindow from "./webviews/modal";
 
 // See `vite.config.ts` for all defined values.
 window.__appVersion = __appVersion;
@@ -36,6 +37,7 @@ const hash = window.location.hash as
   | "#popover"
   | "#tray"
   | "#panel"
+  | "#modal"
   | undefined;
 
 console.log(window.location);
@@ -50,6 +52,8 @@ if (hash === "#popover") {
     panelId = searchParams.get("panelId");
   } catch {}
   defaultRender = <PanelWindow panelId={panelId!} />;
+} else if (hash === "#modal") {
+  defaultRender = <ModalWindow />;
 }
 
 const rootElement = document.getElementById("app")!;

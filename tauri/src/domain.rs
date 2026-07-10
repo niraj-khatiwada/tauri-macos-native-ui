@@ -4,6 +4,7 @@ pub enum AppWindow {
     Popover,
     Tray,
     Panel,
+    Modal,
 }
 
 impl AppWindow {
@@ -13,6 +14,7 @@ impl AppWindow {
             AppWindow::Popover => "popover",
             AppWindow::Tray => "tray",
             AppWindow::Panel => "panel",
+            AppWindow::Modal => "modal",
         }
     }
 

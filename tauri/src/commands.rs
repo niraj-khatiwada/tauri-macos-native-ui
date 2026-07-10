@@ -216,6 +216,42 @@ pub fn close_window_panel(app_handle: AppHandle, panel_id: String) {
 }
 
 #[tauri::command]
+pub fn open_window_as_modal_sheet(
+    app_handle: AppHandle,
+    current_window: WebviewWindow,
+    width: f64,
+    height: f64,
+) -> Result<(), String> {
+    let modal_sheet_window_label = domain::AppWindow::Modal.as_str();
+
+    let mut modal_sheet_url = current_window.url().unwrap();
+    modal_sheet_url.set_fragment(Some(modal_sheet_window_label));
+
+    let sheet_window = WebviewWindowBuilder::new(
+        &app_handle,
+        modal_sheet_window_label,
+        WebviewUrl::CustomProtocol(modal_sheet_url),
+    )
+    .parent(&current_window)
+    .expect("Main parent window context lost")
+    .inner_size(width, height)
+    .visible(false)
+    .decorations(false)
+    .transparent(true)
+    .build()
+    .map_err(|e| format!("Failed to create sheet window: {}", e))?;
+
+    macos_bridge::open_window_as_modal_sheet(&current_window, &sheet_window, width, height)?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn close_window_as_modal_sheet() {
+    macos_bridge::close_window_as_modal_sheet();
+}
+
+#[tauri::command]
 pub fn open_native_tooltip(text: String, keys: Vec<String>, x: f64, y: f64) {
     macos_bridge::show_native_tooltip(text.as_str(), keys, x, y);
 }

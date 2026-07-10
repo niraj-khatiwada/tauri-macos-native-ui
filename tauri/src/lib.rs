@@ -58,6 +58,8 @@ pub fn run() {
             commands::open_native_toast,
             commands::open_tray_popover,
             commands::close_tray_popover,
+            commands::open_window_as_modal_sheet,
+            commands::close_window_as_modal_sheet,
             commands::is_tray_popover_visible,
             commands::resize_tray_popover,
             commands::show_ai_glow_effect,

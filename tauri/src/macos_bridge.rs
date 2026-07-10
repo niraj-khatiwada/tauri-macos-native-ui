@@ -7,7 +7,7 @@ use objc2_app_kit::{NSWindow, NSWindowButton};
 
 use serde_json::Value;
 #[cfg(target_os = "macos")]
-use tauri::{Manager, WebviewWindow};
+use tauri::{Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
 
 #[cfg(target_os = "macos")]
 use crate::{domain, TAURI_APP_HANDLE};
@@ -31,6 +31,12 @@ pub mod ffi {
         Closed { panel_id: String },
     }
 
+    #[derive(Debug)]
+    enum WindowAsSheetEventType {
+        Opened,
+        Closed,
+    }
+
     extern "Rust" {
         fn on_menu_item_clicked_event(id: String);
 
@@ -39,9 +45,20 @@ pub mod ffi {
         fn window_as_popover_event(event_type: WindowAsPopoverEventType);
 
         fn window_as_panel_event(event_type: WindowAsPanelEventType);
+
+        fn window_as_modal_sheet_event(event_type: WindowAsSheetEventType);
     }
 
     extern "Swift" {
+
+        fn showWindowAsModalSheet(
+            parentWindowRawPtr: *mut std::ffi::c_void,
+            childWindowRawPtr: *mut std::ffi::c_void,
+            width: f64,
+            height: f64,
+        );
+        fn closeWindowAsModalSheet();
+
         // native menu
         fn openNativeMenu(x: f64, y: f64, itemsJson: String, focusParentWindow: bool);
         fn closeNativeMenu();
@@ -360,6 +377,48 @@ fn window_as_panel_event(event_type: ffi::WindowAsPanelEventType) {
         }
         _ => {}
     }
+}
+
+// window as sheet
+fn window_as_modal_sheet_event(event_type: ffi::WindowAsSheetEventType) {
+    println!("Window as modal sheet event {:?}", event_type);
+    match event_type {
+        ffi::WindowAsSheetEventType::Closed => {
+            if let Ok(guard) = TAURI_APP_HANDLE.lock() {
+                if let Some(app_handle) = guard.as_ref() {
+                    let modal_window_label = domain::AppWindow::Modal.as_str();
+                    if let Some(window) = app_handle.get_webview_window(modal_window_label) {
+                        let _ = window.destroy();
+                    }
+                } else {
+                    eprintln!("Tauri AppHandle hasn't been initialized in the global state yet!");
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
+pub fn open_window_as_modal_sheet(
+    parent_window: &WebviewWindow,
+    sheet_window: &WebviewWindow,
+    width: f64,
+    height: f64,
+) -> Result<(), String> {
+    let parent_ns_ptr = parent_window
+        .ns_window()
+        .map_err(|_| "Failed getting parent raw pointer".to_string())?;
+    let sheet_ns_ptr = sheet_window
+        .ns_window()
+        .map_err(|_| "Failed getting sheet raw pointer".to_string())?;
+
+    ffi::showWindowAsModalSheet(parent_ns_ptr, sheet_ns_ptr, width, height);
+
+    Ok(())
+}
+
+pub fn close_window_as_modal_sheet() {
+    ffi::closeWindowAsModalSheet();
 }
 
 // trackpad haptics

@@ -13,6 +13,7 @@ const navigationItems = [
     icon: <Icon name="chat-bubble" />,
   },
   { name: "Panel", path: "/panel", icon: <Icon name="rectangle" /> },
+  { name: "Modal", path: "/modal", icon: <Icon name="rectangle" /> },
   { name: "Toast", path: "/toast", icon: <Icon name="toast" /> },
   { name: "Tooltip", path: "/tooltip", icon: <Icon name="chat-bubble" /> },
   {
@@ -24,7 +25,7 @@ const navigationItems = [
 
 export function Sidebar() {
   return (
-    <aside className="w-full h-screen bg-[#F5F5F7]/90 dark:bg-[#1E1E1F]/20 border-r border-[#E5E5EA] dark:border-[#2C2C2E] flex flex-col justify-between p-3 select-none font-sans antialiased">
+    <aside className="w-full h-screen bg-[#F5F5F7]/90 dark:bg-[#1E1E1F]/20 border-r border-[#E5E5EA] dark:border-[#2C2C2E] flex flex-col justify-between py-4 px-2 select-none font-sans antialiased">
       <div className="space-y-6">
         <nav className="space-y-0.5">
           {navigationItems.map((item) => {
@@ -32,10 +33,10 @@ export function Sidebar() {
               <Link
                 key={item.path}
                 to={item.path}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-[14px] font-medium transition-colors duration-150 group outline-none text-white bg-zinc-800/50"
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors duration-150 group outline-none text-white bg-blue-600"
                 inactiveProps={{
                   className:
-                    "text-[#3A3A3C] dark:text-zinc-100 dark:bg-transparent hover:bg-[#E8E8ED] dark:hover:bg-zinc-800/50",
+                    "text-[#3A3A3C] dark:text-zinc-100 dark:bg-transparent",
                 }}
               >
                 <div className="-mb-0.5">{item.icon}</div>
