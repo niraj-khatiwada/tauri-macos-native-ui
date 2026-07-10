@@ -76,3 +76,9 @@ public func showNativePopover(x: Double, y: Double) {
         NativePopoverManager.shared.showOrToggle(x: x, y: y)
     }
 }
+
+public func closeNativePopover() {
+    DispatchQueue.main.async {
+        NativePopoverManager.shared.closeAndCleanup()
+    }
+}

@@ -1,6 +1,13 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 
+type MenuItem = {
+  id: string;
+  title: string;
+  disabled?: boolean;
+  items?: MenuItem[];
+};
+
 export default function TrayWindow() {
   const [counter, setCounter] = useState<number>(0);
 
@@ -33,6 +40,7 @@ export default function TrayWindow() {
       );
     }
   };
+
   return (
     <div className="p-4 w-screen h-screen overflow-auto">
       <div className="w-full flex flex-col items-center justify-center gap-2 text-white text-xs mt-10">

@@ -1,14 +1,23 @@
+import { createFileRoute } from "@tanstack/react-router";
 import { invoke } from "@tauri-apps/api/core";
-import { useState } from "react";
+import { Sidebar } from "./Sidebar";
 
-export default function PopoverWindow() {
-  const [counter, setCounter] = useState<number>(0);
+export const Route = createFileRoute("/(root)/toast")({
+  component: Toast,
+});
 
+function Toast() {
   const handleCopySuccess = () => {
     invoke("open_native_toast", {
       text: "Copied configuration token to clipboard",
       icon: "doc.on.doc.fill",
       iconHex: "#10B981",
+      // You can also pass toast position
+      // Both % and absolute values are supported
+      // (x=0.5, y=0.5) => center of the screen | (x=1.0, y=0.9) => bottom right of the screen
+      // (x=100, y=200) => 100 from left & 200 from top of the screeen
+      x: 1,
+      y: 0.9,
     });
   };
 
@@ -20,20 +29,10 @@ export default function PopoverWindow() {
     });
   };
 
-  const handleClosePopover = () => {
-    invoke("close_window_popover");
-  };
-
   return (
-    <div className="p-4 w-screen h-screen">
+    <section className="grid grid-cols-[200px_1fr]">
+      <Sidebar />
       <div className="w-full flex items-center justify-center gap-2 text-white text-xs">
-        <button
-          onClick={() => {
-            setCounter((s) => s + 1);
-          }}
-        >
-          Click {counter}
-        </button>
         <button
           onClick={handleCopySuccess}
           className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
@@ -48,17 +47,6 @@ export default function PopoverWindow() {
           Show Error Toast
         </button>
       </div>
-      <p className="text-white my-4 text-center">
-        Notice that this popover floats beyond the main window
-      </p>
-      <div className="w-full flex items-center justify-center gap-2 text-white text-xs">
-        <button
-          onClick={handleClosePopover}
-          className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
-        >
-          Close Popover
-        </button>
-      </div>
-    </div>
+    </section>
   );
 }

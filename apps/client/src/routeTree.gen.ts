@@ -10,32 +10,114 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as rootIndexRouteImport } from './routes/(root)/index'
+import { Route as rootTooltipRouteImport } from './routes/(root)/tooltip'
+import { Route as rootToastRouteImport } from './routes/(root)/toast'
+import { Route as rootPopoverRouteImport } from './routes/(root)/popover'
+import { Route as rootPanelRouteImport } from './routes/(root)/panel'
+import { Route as rootMenuRouteImport } from './routes/(root)/menu'
+import { Route as rootAppleIntelligenceRouteImport } from './routes/(root)/apple-intelligence'
 
 const rootIndexRoute = rootIndexRouteImport.update({
   id: '/(root)/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const rootTooltipRoute = rootTooltipRouteImport.update({
+  id: '/(root)/tooltip',
+  path: '/tooltip',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const rootToastRoute = rootToastRouteImport.update({
+  id: '/(root)/toast',
+  path: '/toast',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const rootPopoverRoute = rootPopoverRouteImport.update({
+  id: '/(root)/popover',
+  path: '/popover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const rootPanelRoute = rootPanelRouteImport.update({
+  id: '/(root)/panel',
+  path: '/panel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const rootMenuRoute = rootMenuRouteImport.update({
+  id: '/(root)/menu',
+  path: '/menu',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const rootAppleIntelligenceRoute = rootAppleIntelligenceRouteImport.update({
+  id: '/(root)/apple-intelligence',
+  path: '/apple-intelligence',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/apple-intelligence': typeof rootAppleIntelligenceRoute
+  '/menu': typeof rootMenuRoute
+  '/panel': typeof rootPanelRoute
+  '/popover': typeof rootPopoverRoute
+  '/toast': typeof rootToastRoute
+  '/tooltip': typeof rootTooltipRoute
   '/': typeof rootIndexRoute
 }
 export interface FileRoutesByTo {
+  '/apple-intelligence': typeof rootAppleIntelligenceRoute
+  '/menu': typeof rootMenuRoute
+  '/panel': typeof rootPanelRoute
+  '/popover': typeof rootPopoverRoute
+  '/toast': typeof rootToastRoute
+  '/tooltip': typeof rootTooltipRoute
   '/': typeof rootIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/(root)/apple-intelligence': typeof rootAppleIntelligenceRoute
+  '/(root)/menu': typeof rootMenuRoute
+  '/(root)/panel': typeof rootPanelRoute
+  '/(root)/popover': typeof rootPopoverRoute
+  '/(root)/toast': typeof rootToastRoute
+  '/(root)/tooltip': typeof rootTooltipRoute
   '/(root)/': typeof rootIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/apple-intelligence'
+    | '/menu'
+    | '/panel'
+    | '/popover'
+    | '/toast'
+    | '/tooltip'
+    | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/(root)/'
+  to:
+    | '/apple-intelligence'
+    | '/menu'
+    | '/panel'
+    | '/popover'
+    | '/toast'
+    | '/tooltip'
+    | '/'
+  id:
+    | '__root__'
+    | '/(root)/apple-intelligence'
+    | '/(root)/menu'
+    | '/(root)/panel'
+    | '/(root)/popover'
+    | '/(root)/toast'
+    | '/(root)/tooltip'
+    | '/(root)/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  rootAppleIntelligenceRoute: typeof rootAppleIntelligenceRoute
+  rootMenuRoute: typeof rootMenuRoute
+  rootPanelRoute: typeof rootPanelRoute
+  rootPopoverRoute: typeof rootPopoverRoute
+  rootToastRoute: typeof rootToastRoute
+  rootTooltipRoute: typeof rootTooltipRoute
   rootIndexRoute: typeof rootIndexRoute
 }
 
@@ -48,10 +130,58 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof rootIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(root)/tooltip': {
+      id: '/(root)/tooltip'
+      path: '/tooltip'
+      fullPath: '/tooltip'
+      preLoaderRoute: typeof rootTooltipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(root)/toast': {
+      id: '/(root)/toast'
+      path: '/toast'
+      fullPath: '/toast'
+      preLoaderRoute: typeof rootToastRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(root)/popover': {
+      id: '/(root)/popover'
+      path: '/popover'
+      fullPath: '/popover'
+      preLoaderRoute: typeof rootPopoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(root)/panel': {
+      id: '/(root)/panel'
+      path: '/panel'
+      fullPath: '/panel'
+      preLoaderRoute: typeof rootPanelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(root)/menu': {
+      id: '/(root)/menu'
+      path: '/menu'
+      fullPath: '/menu'
+      preLoaderRoute: typeof rootMenuRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(root)/apple-intelligence': {
+      id: '/(root)/apple-intelligence'
+      path: '/apple-intelligence'
+      fullPath: '/apple-intelligence'
+      preLoaderRoute: typeof rootAppleIntelligenceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  rootAppleIntelligenceRoute: rootAppleIntelligenceRoute,
+  rootMenuRoute: rootMenuRoute,
+  rootPanelRoute: rootPanelRoute,
+  rootPopoverRoute: rootPopoverRoute,
+  rootToastRoute: rootToastRoute,
+  rootTooltipRoute: rootTooltipRoute,
   rootIndexRoute: rootIndexRoute,
 }
 export const routeTree = rootRouteImport

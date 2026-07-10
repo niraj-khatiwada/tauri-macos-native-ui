@@ -77,8 +77,6 @@ class TooltipManager {
             })
     }
 
-    // MARK: - Window Focus Helpers
-
     private func setupFocusObserver(for window: NSWindow) {
         removeFocusObserver()
         
@@ -100,8 +98,6 @@ class TooltipManager {
             windowFocusObserver = nil
         }
     }
-
-    // MARK: - Frame Calculations
 
     private func repositionPanel(_ panel: NSPanel, minX: Double, minY: Double) {
         guard

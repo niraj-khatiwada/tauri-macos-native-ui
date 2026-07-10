@@ -43,6 +43,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
+            commands::open_native_menu,
             commands::open_window_popover,
             commands::close_window_popover,
             commands::is_window_popover_visible,

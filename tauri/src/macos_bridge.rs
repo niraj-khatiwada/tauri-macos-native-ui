@@ -5,6 +5,7 @@ use std::{ffi::c_void, ops::Deref};
 #[cfg(target_os = "macos")]
 use objc2_app_kit::{NSWindow, NSWindowButton};
 
+use serde_json::Value;
 #[cfg(target_os = "macos")]
 use tauri::{Manager, WebviewWindow};
 
@@ -31,6 +32,8 @@ pub mod ffi {
     }
 
     extern "Rust" {
+        fn on_menu_item_clicked_event(id: String);
+
         fn tray_popover_event(event_type: TrayPopoverEventType);
 
         fn window_as_popover_event(event_type: WindowAsPopoverEventType);
@@ -39,6 +42,10 @@ pub mod ffi {
     }
 
     extern "Swift" {
+        // native menu
+        fn openNativeMenu(x: f64, y: f64, itemsJson: String, focusParentWindow: bool);
+        fn closeNativeMenu();
+
         // tray popover
         fn initTrayPopoverManager(
             nsWindowPtr: *mut std::ffi::c_void,
@@ -51,6 +58,7 @@ pub mod ffi {
 
         // native popover
         fn showNativePopover(x: f64, y: f64);
+        fn closeNativePopover();
 
         // native tooltip
         fn showNativeTooltip(text: String, keysArrayStr: String, x: f64, y: f64);
@@ -115,6 +123,68 @@ pub fn hide_traffic_light_buttons(window: &tauri::WebviewWindow<tauri::Wry>) {
     }
 }
 
+// native menu
+fn on_menu_item_clicked_event(id: String) {
+    println!("Menu item clicked {}////", id);
+}
+
+#[cfg(target_os = "macos")]
+pub fn open_native_menu(
+    x: f64,
+    y: f64,
+    items: Vec<Value>,
+    focus_parent_window: Option<bool>,
+) -> Result<(), String> {
+    let mut normalized_items = Vec::new();
+
+    for item in items {
+        if let Some(normalized) = normalize_menu_item(item) {
+            normalized_items.push(normalized);
+        }
+    }
+
+    if let Ok(json_str) = serde_json::to_string(&normalized_items) {
+        ffi::openNativeMenu(x, y, json_str, focus_parent_window.unwrap_or_default());
+        Ok(())
+    } else {
+        Err("Failed to process menu items structure".to_string())
+    }
+}
+
+#[cfg(target_os = "macos")]
+pub fn close_native_menu() {
+    ffi::closeNativeMenu();
+}
+
+fn normalize_menu_item(val: Value) -> Option<Value> {
+    match val {
+        Value::Object(mut map) => {
+            if let Some(subitems) = map.remove("subitems") {
+                if let Value::Array(sub_arr) = subitems {
+                    let normalized_sub: Vec<Value> = sub_arr
+                        .into_iter()
+                        .filter_map(normalize_menu_item)
+                        .collect();
+                    map.insert("subitems".to_string(), Value::Array(normalized_sub));
+                }
+            }
+            Some(Value::Object(map))
+        }
+        Value::Array(arr) => {
+            let normalized_sub: Vec<Value> =
+                arr.into_iter().filter_map(normalize_menu_item).collect();
+            let fallback_id = format!("group_{}", uuid::Uuid::new_v4());
+
+            Some(serde_json::json!({
+                "id": fallback_id,
+                "title": "More Options",
+                "subitems": normalized_sub
+            }))
+        }
+        _ => None,
+    }
+}
+
 // tray popover
 fn tray_popover_event(event_type: ffi::TrayPopoverEventType) {
     println!("Tray popover event {:?}", event_type)
@@ -124,6 +194,11 @@ fn tray_popover_event(event_type: ffi::TrayPopoverEventType) {
 #[cfg(target_os = "macos")]
 pub fn show_native_popover(x: f64, y: f64) {
     ffi::showNativePopover(x, y);
+}
+
+#[cfg(target_os = "macos")]
+pub fn close_native_popover() {
+    ffi::closeNativePopover();
 }
 
 // native tooltip

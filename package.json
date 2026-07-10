@@ -27,5 +27,8 @@
     "src/**/*.{js,ts,jsx,tsx}": [
       "biome check --write"
     ]
+  },
+  "dependencies": {
+    "vite-plugin-svgr": "^5.2.0"
   }
 }

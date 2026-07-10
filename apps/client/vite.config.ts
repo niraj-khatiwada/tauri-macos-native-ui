@@ -4,6 +4,7 @@ import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
+import svgr from "vite-plugin-svgr";
 
 import packageJSON from "./package.json";
 
@@ -19,6 +20,7 @@ const config = defineConfig(({ mode }) => ({
     }),
     tailwindcss(),
     viteReact(),
+    svgr(),
   ],
   base: "./",
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`

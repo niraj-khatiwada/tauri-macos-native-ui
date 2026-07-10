@@ -24,6 +24,7 @@ serde_json = "1.0.150"
 tauri = { version = "2.9.2", features = ["tray-icon", "macos-private-api", "unstable"] }
 tauri-plugin-opener = "2.5.2"
 tauri-plugin-shell = "2.3.3"
+uuid = { version = "1.0", features = ["v4"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 swift-bridge = "0.1"

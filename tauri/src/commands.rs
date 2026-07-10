@@ -1,8 +1,20 @@
 use crate::tray_popover::WindowExt;
 use crate::{domain, macos_bridge};
+use serde_json::Value;
 use tauri::webview::PageLoadEvent;
 use tauri::{AppHandle, Manager, WebviewWindow};
 use tauri::{WebviewUrl, WebviewWindowBuilder};
+
+#[tauri::command]
+pub fn open_native_menu(
+    _app: tauri::AppHandle,
+    x: f64,
+    y: f64,
+    items: Vec<Value>,
+    focus_parent_window: Option<bool>,
+) -> Result<(), String> {
+    macos_bridge::open_native_menu(x, y, items, focus_parent_window)
+}
 
 #[tauri::command]
 pub fn open_native_popover(_app: tauri::AppHandle, x: f64, y: f64) {
