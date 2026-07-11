@@ -153,11 +153,13 @@ class WindowAsPanelManager {
         let newY = centerY - (newSize.height / 2.0)
 
         let newPanelRect = NSRect(x: newX, y: newY, width: newSize.width, height: newSize.height)
+
+        // FIX 1: Allow the source window view to stretch down 100% of the newly calculated height
         let newSourceWindowRect = NSRect(
             x: newPanelRect.origin.x,
             y: newPanelRect.origin.y,
             width: newPanelRect.width,
-            height: newPanelRect.height - Self.dragHandleHeight
+            height: newPanelRect.height
         )
 
         container.currentPanelOrigin = newPanelRect.origin
@@ -252,8 +254,6 @@ class WindowAsPanelManager {
         container.sourceWindow = sourceWindow
         container.originalWebviewSize = targetSize
 
-        let handleHeight = Self.dragHandleHeight
-
         if container.moveObserver == nil {
             container.moveObserver = NotificationCenter.default.addObserver(
                 forName: NSWindow.didMoveNotification,
@@ -267,12 +267,13 @@ class WindowAsPanelManager {
 
                     if let sourceWindow = container.sourceWindow {
                         let currentPanelFrame = container.panel.frame
+                        // FIX 2: Re-align frame sync listener so the webview remains full height during drags
                         sourceWindow.setFrame(
                             NSRect(
                                 x: currentPanelFrame.origin.x,
                                 y: currentPanelFrame.origin.y,
                                 width: currentPanelFrame.width,
-                                height: currentPanelFrame.height - handleHeight
+                                height: currentPanelFrame.height
                             ),
                             display: true
                         )
@@ -323,6 +324,7 @@ class WindowAsPanelManager {
         stolenView.layer?.backgroundColor = NSColor.clear.cgColor
         glassCanvas.addSubview(stolenView)
 
+        // The top drag handle view remains placed cleanly right at the top layout ceiling frame
         let dragHandle = WindowAsPanelSwiftDragHandleView()
         dragHandle.frame = NSRect(
             x: 0, y: targetSize.height - Self.dragHandleHeight, width: targetSize.width,
@@ -354,10 +356,12 @@ class WindowAsPanelManager {
         sourceWindow.isOpaque = false
         sourceWindow.backgroundColor = .clear
         sourceWindow.hasShadow = false
+
+        // FIX 3: Initialize the active source window view frame mapping at maximum height matching panel boundaries
         sourceWindow.setFrame(
             NSRect(
                 x: panel.frame.origin.x, y: panel.frame.origin.y, width: targetSize.width,
-                height: targetSize.height - Self.dragHandleHeight), display: true)
+                height: targetSize.height), display: true)
         panel.addChildWindow(sourceWindow, ordered: .below)
 
         panel.orderFrontRegardless()
@@ -395,10 +399,11 @@ class WindowAsPanelManager {
         container.currentPanelOrigin = panelRect.origin
 
         if let sourceWindow = container.sourceWindow {
+            // FIX 4: Ensure dynamic manual coordinate shifting calls preserve complete height layout properties
             sourceWindow.setFrame(
                 NSRect(
                     x: panelX, y: panelY, width: targetSize.width,
-                    height: targetSize.height - Self.dragHandleHeight), display: true)
+                    height: targetSize.height), display: true)
         }
     }
 

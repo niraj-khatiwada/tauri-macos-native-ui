@@ -7,7 +7,7 @@ use objc2_app_kit::{NSWindow, NSWindowButton};
 
 use serde_json::Value;
 #[cfg(target_os = "macos")]
-use tauri::{Manager, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
+use tauri::{Manager, WebviewWindow};
 
 #[cfg(target_os = "macos")]
 use crate::{domain, TAURI_APP_HANDLE};
@@ -50,15 +50,6 @@ pub mod ffi {
     }
 
     extern "Swift" {
-
-        fn showWindowAsModalSheet(
-            parentWindowRawPtr: *mut std::ffi::c_void,
-            childWindowRawPtr: *mut std::ffi::c_void,
-            width: f64,
-            height: f64,
-        );
-        fn closeWindowAsModalSheet();
-
         // native menu
         fn openNativeMenu(x: f64, y: f64, itemsJson: String, focusParentWindow: bool);
         fn closeNativeMenu();
@@ -76,6 +67,15 @@ pub mod ffi {
         // native popover
         fn showNativePopover(x: f64, y: f64);
         fn closeNativePopover();
+
+        // native modal sheet
+        fn showWindowAsModalSheet(
+            parentWindowRawPtr: *mut std::ffi::c_void,
+            childWindowRawPtr: *mut std::ffi::c_void,
+            width: f64,
+            height: f64,
+        );
+        fn closeWindowAsModalSheet();
 
         // native tooltip
         fn showNativeTooltip(text: String, keysArrayStr: String, x: f64, y: f64);
@@ -142,7 +142,7 @@ pub fn hide_traffic_light_buttons(window: &tauri::WebviewWindow<tauri::Wry>) {
 
 // native menu
 fn on_menu_item_clicked_event(id: String) {
-    println!("Menu item clicked {}////", id);
+    println!("Menu item clicked {}", id);
 }
 
 #[cfg(target_os = "macos")]
@@ -379,7 +379,7 @@ fn window_as_panel_event(event_type: ffi::WindowAsPanelEventType) {
     }
 }
 
-// window as sheet
+// show any Tauri window as a modal sheet: we can only have 1 popover at a time
 fn window_as_modal_sheet_event(event_type: ffi::WindowAsSheetEventType) {
     println!("Window as modal sheet event {:?}", event_type);
     match event_type {

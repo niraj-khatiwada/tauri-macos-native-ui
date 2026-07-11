@@ -20,7 +20,7 @@ fn create_tray_window(app_handle: &AppHandle, label: &str) -> Result<WebviewWind
         app_handle.get_webview_window(domain::AppWindow::Main.as_str())
     {
         let mut url = main_window.url().map_err(|err| err.to_string())?;
-        url.set_fragment(Some(label));
+        url.set_fragment(Some(&domain::AppWindow::Tray.get_webview_url()));
         WebviewUrl::CustomProtocol(url)
     } else {
         WebviewUrl::App(format!("index.html#{}", label).into())

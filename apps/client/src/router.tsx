@@ -8,10 +8,6 @@ import ReactDOM from "react-dom/client";
 import "./styles.css";
 
 import { routeTree } from "./routeTree.gen";
-import PopoverWindow from "./webviews/popover";
-import TrayWindow from "./webviews/tray";
-import PanelWindow from "./webviews/panel";
-import ModalWindow from "./webviews/modal";
 
 // See `vite.config.ts` for all defined values.
 window.__appVersion = __appVersion;
@@ -31,33 +27,10 @@ declare module "@tanstack/react-router" {
   }
 }
 
-let defaultRender = <RouterProvider router={router} />;
-
-const hash = window.location.hash as
-  | "#popover"
-  | "#tray"
-  | "#panel"
-  | "#modal"
-  | undefined;
-
-console.log(window.location);
-if (hash === "#popover") {
-  defaultRender = <PopoverWindow />;
-} else if (hash === "#tray") {
-  defaultRender = <TrayWindow />;
-} else if (hash === "#panel") {
-  let panelId: string | null;
-  try {
-    const searchParams = new URLSearchParams(window.location.search);
-    panelId = searchParams.get("panelId");
-  } catch {}
-  defaultRender = <PanelWindow panelId={panelId!} />;
-} else if (hash === "#modal") {
-  defaultRender = <ModalWindow />;
-}
+let base = <RouterProvider router={router} />;
 
 const rootElement = document.getElementById("app")!;
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
-  root.render(defaultRender);
+  root.render(base);
 }

@@ -19,7 +19,7 @@ function RootComponent() {
         {isMacOS ? <Titlebar /> : null}
         <Outlet />
       </QueryClientProvider>
-      {isDev ? <TanStackRouterDevtools position="bottom-right" /> : null}
+      {/*{isDev ? <TanStackRouterDevtools position="bottom-left" /> : null}*/}
     </>
   );
 }

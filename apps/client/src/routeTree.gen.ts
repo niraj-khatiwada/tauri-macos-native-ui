@@ -17,6 +17,10 @@ import { Route as rootPanelRouteImport } from './routes/(root)/panel'
 import { Route as rootModalRouteImport } from './routes/(root)/modal'
 import { Route as rootMenuRouteImport } from './routes/(root)/menu'
 import { Route as rootAppleIntelligenceRouteImport } from './routes/(root)/apple-intelligence'
+import { Route as WebviewsTrayIndexRouteImport } from './routes/webviews/tray/index'
+import { Route as WebviewsPopoverIndexRouteImport } from './routes/webviews/popover/index'
+import { Route as WebviewsModalIndexRouteImport } from './routes/webviews/modal/index'
+import { Route as WebviewsPanelIdRouteImport } from './routes/webviews/panel/$id'
 
 const rootIndexRoute = rootIndexRouteImport.update({
   id: '/(root)/',
@@ -58,6 +62,26 @@ const rootAppleIntelligenceRoute = rootAppleIntelligenceRouteImport.update({
   path: '/apple-intelligence',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WebviewsTrayIndexRoute = WebviewsTrayIndexRouteImport.update({
+  id: '/webviews/tray/',
+  path: '/webviews/tray/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebviewsPopoverIndexRoute = WebviewsPopoverIndexRouteImport.update({
+  id: '/webviews/popover/',
+  path: '/webviews/popover/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebviewsModalIndexRoute = WebviewsModalIndexRouteImport.update({
+  id: '/webviews/modal/',
+  path: '/webviews/modal/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WebviewsPanelIdRoute = WebviewsPanelIdRouteImport.update({
+  id: '/webviews/panel/$id',
+  path: '/webviews/panel/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/apple-intelligence': typeof rootAppleIntelligenceRoute
@@ -68,6 +92,10 @@ export interface FileRoutesByFullPath {
   '/toast': typeof rootToastRoute
   '/tooltip': typeof rootTooltipRoute
   '/': typeof rootIndexRoute
+  '/webviews/panel/$id': typeof WebviewsPanelIdRoute
+  '/webviews/modal': typeof WebviewsModalIndexRoute
+  '/webviews/popover': typeof WebviewsPopoverIndexRoute
+  '/webviews/tray': typeof WebviewsTrayIndexRoute
 }
 export interface FileRoutesByTo {
   '/apple-intelligence': typeof rootAppleIntelligenceRoute
@@ -78,6 +106,10 @@ export interface FileRoutesByTo {
   '/toast': typeof rootToastRoute
   '/tooltip': typeof rootTooltipRoute
   '/': typeof rootIndexRoute
+  '/webviews/panel/$id': typeof WebviewsPanelIdRoute
+  '/webviews/modal': typeof WebviewsModalIndexRoute
+  '/webviews/popover': typeof WebviewsPopoverIndexRoute
+  '/webviews/tray': typeof WebviewsTrayIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +121,10 @@ export interface FileRoutesById {
   '/(root)/toast': typeof rootToastRoute
   '/(root)/tooltip': typeof rootTooltipRoute
   '/(root)/': typeof rootIndexRoute
+  '/webviews/panel/$id': typeof WebviewsPanelIdRoute
+  '/webviews/modal/': typeof WebviewsModalIndexRoute
+  '/webviews/popover/': typeof WebviewsPopoverIndexRoute
+  '/webviews/tray/': typeof WebviewsTrayIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +137,10 @@ export interface FileRouteTypes {
     | '/toast'
     | '/tooltip'
     | '/'
+    | '/webviews/panel/$id'
+    | '/webviews/modal'
+    | '/webviews/popover'
+    | '/webviews/tray'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/apple-intelligence'
@@ -111,6 +151,10 @@ export interface FileRouteTypes {
     | '/toast'
     | '/tooltip'
     | '/'
+    | '/webviews/panel/$id'
+    | '/webviews/modal'
+    | '/webviews/popover'
+    | '/webviews/tray'
   id:
     | '__root__'
     | '/(root)/apple-intelligence'
@@ -121,6 +165,10 @@ export interface FileRouteTypes {
     | '/(root)/toast'
     | '/(root)/tooltip'
     | '/(root)/'
+    | '/webviews/panel/$id'
+    | '/webviews/modal/'
+    | '/webviews/popover/'
+    | '/webviews/tray/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +180,10 @@ export interface RootRouteChildren {
   rootToastRoute: typeof rootToastRoute
   rootTooltipRoute: typeof rootTooltipRoute
   rootIndexRoute: typeof rootIndexRoute
+  WebviewsPanelIdRoute: typeof WebviewsPanelIdRoute
+  WebviewsModalIndexRoute: typeof WebviewsModalIndexRoute
+  WebviewsPopoverIndexRoute: typeof WebviewsPopoverIndexRoute
+  WebviewsTrayIndexRoute: typeof WebviewsTrayIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +244,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof rootAppleIntelligenceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/webviews/tray/': {
+      id: '/webviews/tray/'
+      path: '/webviews/tray'
+      fullPath: '/webviews/tray'
+      preLoaderRoute: typeof WebviewsTrayIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/webviews/popover/': {
+      id: '/webviews/popover/'
+      path: '/webviews/popover'
+      fullPath: '/webviews/popover'
+      preLoaderRoute: typeof WebviewsPopoverIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/webviews/modal/': {
+      id: '/webviews/modal/'
+      path: '/webviews/modal'
+      fullPath: '/webviews/modal'
+      preLoaderRoute: typeof WebviewsModalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/webviews/panel/$id': {
+      id: '/webviews/panel/$id'
+      path: '/webviews/panel/$id'
+      fullPath: '/webviews/panel/$id'
+      preLoaderRoute: typeof WebviewsPanelIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -204,6 +284,10 @@ const rootRouteChildren: RootRouteChildren = {
   rootToastRoute: rootToastRoute,
   rootTooltipRoute: rootTooltipRoute,
   rootIndexRoute: rootIndexRoute,
+  WebviewsPanelIdRoute: WebviewsPanelIdRoute,
+  WebviewsModalIndexRoute: WebviewsModalIndexRoute,
+  WebviewsPopoverIndexRoute: WebviewsPopoverIndexRoute,
+  WebviewsTrayIndexRoute: WebviewsTrayIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,4 +1,9 @@
 import { invoke } from "@tauri-apps/api/core";
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/webviews/modal/")({
+  component: ModalWindow,
+});
 
 export default function ModalWindow() {
   const handleCloseModal = () => {

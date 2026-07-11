@@ -1,6 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/webviews/popover/")({
+  component: PopoverWindow,
+});
+
 export default function PopoverWindow() {
   const [counter, setCounter] = useState<number>(0);
 

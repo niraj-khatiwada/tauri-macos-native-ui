@@ -1,7 +1,15 @@
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
-export default function PanelWindow({ panelId }: { panelId: string }) {
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/webviews/panel/$id")({
+  component: PanelWindow,
+});
+
+export default function PanelWindow() {
+  const { id: panelId } = Route.useParams();
+
   const handleClosePanel = () => {
     invoke("close_window_panel", {
       panelId,

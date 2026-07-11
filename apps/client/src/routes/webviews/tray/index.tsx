@@ -1,12 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 
-type MenuItem = {
-  id: string;
-  title: string;
-  disabled?: boolean;
-  items?: MenuItem[];
-};
+import { createFileRoute } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/webviews/tray/")({
+  component: TrayWindow,
+});
 
 export default function TrayWindow() {
   const [counter, setCounter] = useState<number>(0);

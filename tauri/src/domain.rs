@@ -25,4 +25,16 @@ impl AppWindow {
             self.as_str().to_string()
         }
     }
+
+    pub fn get_webview_url(&self) -> String {
+        format!("webviews/{}", self.as_str())
+    }
+
+    pub fn get_panel_window_webview_url(&self, panel_id: &str) -> String {
+        let webview_url = self.get_webview_url();
+        if self.eq(&AppWindow::Panel) {
+            return format!("{}/{}", webview_url, panel_id);
+        }
+        webview_url
+    }
 }

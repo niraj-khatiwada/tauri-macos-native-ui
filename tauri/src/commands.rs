@@ -63,7 +63,7 @@ fn create_fresh_popover(
     let popover_window_label = domain::AppWindow::Popover.as_str();
 
     let mut popover_url = parent_window.url().unwrap();
-    popover_url.set_fragment(Some(popover_window_label));
+    popover_url.set_fragment(Some(&domain::AppWindow::Popover.get_webview_url()));
 
     match WebviewWindowBuilder::new(
         app_handle,
@@ -153,11 +153,7 @@ fn create_fresh_panel(
     let panel_window_label = panel.get_panel_window_label_by_id(&panel_id);
 
     let mut panel_url = parent_window.url().unwrap();
-    {
-        let mut query_pairs = panel_url.query_pairs_mut();
-        query_pairs.append_pair("panelId", &panel_id);
-    }
-    panel_url.set_fragment(Some(panel.as_str()));
+    panel_url.set_fragment(Some(&panel.get_panel_window_webview_url(&panel_id)));
 
     match WebviewWindowBuilder::new(
         app_handle,
@@ -225,7 +221,7 @@ pub fn open_window_as_modal_sheet(
     let modal_sheet_window_label = domain::AppWindow::Modal.as_str();
 
     let mut modal_sheet_url = current_window.url().unwrap();
-    modal_sheet_url.set_fragment(Some(modal_sheet_window_label));
+    modal_sheet_url.set_fragment(Some(&domain::AppWindow::Modal.get_webview_url()));
 
     let sheet_window = WebviewWindowBuilder::new(
         &app_handle,
