@@ -27,7 +27,7 @@ export default function PanelWindow() {
     invoke("resize_window_panel", {
       panelId,
       width: outerSizeLogical.width === 500 ? 800 : 500,
-      height: outerSizeLogical.width === 500 ? 600 : 300,
+      height: outerSizeLogical.height === 300 ? 600 : 300,
       animate: true,
       blurOverlayOnResize: true,
     });

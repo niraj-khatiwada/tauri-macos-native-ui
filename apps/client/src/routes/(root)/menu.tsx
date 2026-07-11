@@ -75,7 +75,7 @@ function Menu() {
           Open Native Menu
         </button>
         <div
-          className="w-[95%] h-40 bg-zinc-900 rounded-xl mt-10 text-white/50 flex justify-center items-center select-none"
+          className="w-[75%] h-40 bg-zinc-900/25 rounded-xl mt-10 text-white/50 flex justify-center items-center select-none"
           onContextMenu={handleContextMenu}
         >
           Context Menu (Right-Click Me)

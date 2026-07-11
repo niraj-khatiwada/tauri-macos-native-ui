@@ -9,6 +9,7 @@ use serde_json::Value;
 #[cfg(target_os = "macos")]
 use tauri::{Manager, WebviewWindow};
 
+use crate::domain::NativeAlertActionButton;
 #[cfg(target_os = "macos")]
 use crate::{domain, TAURI_APP_HANDLE};
 
@@ -37,6 +38,12 @@ pub mod ffi {
         Closed,
     }
 
+    pub enum AlertDialogEventType {
+        Opened,
+        ActionClicked { button_id: String },
+        Closed,
+    }
+
     extern "Rust" {
         fn on_menu_item_clicked_event(id: String);
 
@@ -47,6 +54,8 @@ pub mod ffi {
         fn window_as_panel_event(event_type: WindowAsPanelEventType);
 
         fn window_as_modal_sheet_event(event_type: WindowAsSheetEventType);
+
+        fn on_alert_dialog_event(id: String, event_type: AlertDialogEventType);
     }
 
     extern "Swift" {
@@ -84,7 +93,7 @@ pub mod ffi {
         // native toast
         fn showNativeToast(text: String, icon: String, iconHex: String, x: f64, y: f64);
 
-        // show any Tauri window as a popover
+        // show any tauri window as a popover
         fn showWindowAsPopover(windowRawPtr: *mut std::ffi::c_void, x: f64, y: f64);
         fn closeWindowAsPopover();
         fn isWindowAsPopoverVisible() -> bool;
@@ -108,6 +117,16 @@ pub mod ffi {
             blurOverlayOnResize: bool,
         );
 
+        // alert dialog
+        fn showNativeAlertDialog(
+            id: String,
+            title: String,
+            description: String,
+            buttonsJson: String,
+            detached: bool,
+        );
+        fn closeNativeAlertDialog(id: String);
+
         // haptic
         fn triggerTrackpadHaptic(intensity: f64, sharpness: f64);
 
@@ -118,7 +137,7 @@ pub mod ffi {
     }
 }
 
-// Hide the native traffic light buttons
+// hide the native traffic light buttons
 #[cfg(target_os = "macos")]
 pub fn hide_traffic_light_buttons(window: &tauri::WebviewWindow<tauri::Wry>) {
     if let Ok(ns_window_ptr) = window.ns_window() {
@@ -419,6 +438,48 @@ pub fn open_window_as_modal_sheet(
 
 pub fn close_window_as_modal_sheet() {
     ffi::closeWindowAsModalSheet();
+}
+
+// native alert dialog
+fn on_alert_dialog_event(id: String, event_type: ffi::AlertDialogEventType) {
+    match event_type {
+        ffi::AlertDialogEventType::Opened => {
+            println!(
+                "Rust Event received: Alert [{}] was displayed successfully.",
+                id
+            );
+        }
+        ffi::AlertDialogEventType::ActionClicked { button_id } => {
+            println!(
+                "Rust Event received: Button [{}] clicked on Alert [{}]",
+                button_id, id
+            );
+        }
+        ffi::AlertDialogEventType::Closed => {
+            println!("Rust Event received: Alert [{}] was dismantled.", id);
+        }
+    }
+}
+
+pub fn open_alert_dialog(
+    id: String,
+    title: String,
+    description: String,
+    buttons: Vec<NativeAlertActionButton>,
+    detached: Option<bool>,
+) {
+    let buttons_json = serde_json::to_string(&buttons).unwrap_or_else(|_| "[]".to_string());
+    ffi::showNativeAlertDialog(
+        id,
+        title,
+        description,
+        buttons_json,
+        detached.unwrap_or_default(),
+    );
+}
+
+pub fn close_alert_dialog(id: String) {
+    ffi::closeNativeAlertDialog(id);
 }
 
 // trackpad haptics

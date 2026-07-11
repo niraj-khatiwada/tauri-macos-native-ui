@@ -204,11 +204,16 @@ public func resizeTrayPopover(
         NSAnimationContext.endGrouping()
 
         popover.animates = false
-        let duration = animate ? 0.25 : 0.0
+        let duration = animate ? 0.45 : 0.0
 
         NSAnimationContext.runAnimationGroup { context in
             context.duration = duration
-            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+
+            if animate {
+                context.timingFunction = CAMediaTimingFunction(controlPoints: 0.25, 1.0, 0.4, 1.15)
+            } else {
+                context.timingFunction = CAMediaTimingFunction(name: .linear)
+            }
 
             if let popoverWindow = contentView.window {
                 let currentFrame = popoverWindow.frame
@@ -244,14 +249,17 @@ public func resizeTrayPopover(
                 popover.contentSize = newSize
                 contentView.frame = targetRect
                 containerView.frame = targetRect
+                containerView.layer?.shouldRasterize = false
 
                 NSAnimationContext.beginGrouping()
                 NSAnimationContext.current.duration = 0
                 resizeSubviewsRecursively(stolenView, to: newSize)
+                contentView.needsDisplay = true
+                stolenView.needsDisplay = true
                 NSAnimationContext.endGrouping()
 
                 if let blur = stableBlurReference {
-                    try? await Task.sleep(nanoseconds: 200_000_000)  // 0.2s delay
+                    try? await Task.sleep(nanoseconds: 50_000_000)
 
                     NSAnimationContext.runAnimationGroup { context in
                         context.duration = 0.15
@@ -259,15 +267,8 @@ public func resizeTrayPopover(
                     } completionHandler: {
                         Task { @MainActor [blur] in
                             blur.removeFromSuperview()
-                            containerView.layer?.shouldRasterize = false
-                            contentView.needsDisplay = true
-                            stolenView.needsDisplay = true
                         }
                     }
-                } else {
-                    containerView.layer?.shouldRasterize = false
-                    contentView.needsDisplay = true
-                    stolenView.needsDisplay = true
                 }
             }
         }

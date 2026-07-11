@@ -14,7 +14,6 @@ export default function ModalWindow() {
     <>
       <div className="p-4 w-screen h-screen my-4 overflow-auto">
         <h1 className="text-2xl text-center text-white">Modal</h1>
-
         <p className="text-white mt-10">
           This modal goes beyond the window boundaries. They are fixed relative
           to parent window. Try moving parent window, this will move seamlessly

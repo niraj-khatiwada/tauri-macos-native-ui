@@ -153,14 +153,7 @@ class WindowAsPanelManager {
         let newY = centerY - (newSize.height / 2.0)
 
         let newPanelRect = NSRect(x: newX, y: newY, width: newSize.width, height: newSize.height)
-
-        // FIX 1: Allow the source window view to stretch down 100% of the newly calculated height
-        let newSourceWindowRect = NSRect(
-            x: newPanelRect.origin.x,
-            y: newPanelRect.origin.y,
-            width: newPanelRect.width,
-            height: newPanelRect.height
-        )
+        let newSourceWindowRect = newPanelRect
 
         container.currentPanelOrigin = newPanelRect.origin
 
@@ -183,30 +176,34 @@ class WindowAsPanelManager {
         }
 
         let stableBlurReference = temporaryBlur
-        let duration = animate ? 0.3 : 0.0
+        let duration = animate ? 0.45 : 0.0
 
         NSAnimationContext.runAnimationGroup(
             { context in
                 context.duration = duration
-                context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
                 if animate {
+                    context.timingFunction = CAMediaTimingFunction(
+                        controlPoints: 0.25, 1.0, 0.4, 1.15)
+
                     panel.animator().setFrame(newPanelRect, display: true)
                     container.sourceWindow?.animator().setFrame(newSourceWindowRect, display: true)
                 } else {
                     panel.setFrame(newPanelRect, display: true)
                     container.sourceWindow?.setFrame(newSourceWindowRect, display: true)
                 }
-
             },
             completionHandler: {
                 Task { @MainActor [stableBlurReference] in
+                    contentView.needsDisplay = true
+                    panel.contentView?.needsDisplay = true
+
                     if let blur = stableBlurReference {
-                        try? await Task.sleep(nanoseconds: 200_000_000)  // 0.2s delay
+                        try? await Task.sleep(nanoseconds: 50_000_000)
 
                         NSAnimationContext.runAnimationGroup(
                             { context in
-                                context.duration = 0.3
+                                context.duration = 0.15
                                 blur.animator().alphaValue = 0.0
                             },
                             completionHandler: {

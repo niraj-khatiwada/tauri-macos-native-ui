@@ -38,3 +38,10 @@ impl AppWindow {
         webview_url
     }
 }
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+pub struct NativeAlertActionButton {
+    pub id: String,
+    pub label: String,
+    pub r#type: String, // "default" | "info" | "warning"
+}

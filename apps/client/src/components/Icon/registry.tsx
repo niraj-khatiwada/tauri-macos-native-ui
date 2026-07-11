@@ -4,6 +4,7 @@ import ChatBubble from "~/assets/icons/chat-bubble.svg?react";
 import Rectangle from "~/assets/icons/rectangle.svg?react";
 import Toast from "~/assets/icons/toast.svg?react";
 import AI from "~/assets/icons/ai.svg?react";
+import Bell from "~/assets/icons/bell.svg?react";
 
 type SVGAsComponent = React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
 
@@ -18,6 +19,7 @@ const registry = asRegistry({
   rectangle: Rectangle,
   toast: Toast,
   ai: AI,
+  bell: Bell,
 });
 
 export default registry;

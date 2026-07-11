@@ -16,6 +16,7 @@ const navigationItems = [
   { name: "Modal", path: "/modal", icon: <Icon name="rectangle" /> },
   { name: "Toast", path: "/toast", icon: <Icon name="toast" /> },
   { name: "Tooltip", path: "/tooltip", icon: <Icon name="chat-bubble" /> },
+  { name: "Alert", path: "/alert", icon: <Icon name="bell" /> },
   {
     name: "Apple Intelligence",
     path: "/apple-intelligence",

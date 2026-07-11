@@ -1,3 +1,4 @@
+use crate::domain::NativeAlertActionButton;
 use crate::tray_popover::WindowExt;
 use crate::{domain, macos_bridge};
 use serde_json::Value;
@@ -332,6 +333,24 @@ pub fn is_tray_popover_visible(app_handle: AppHandle) -> bool {
         }
     };
     return false;
+}
+
+#[tauri::command]
+pub async fn open_alert_dialog(
+    _app: tauri::AppHandle,
+    id: String,
+    title: String,
+    description: String,
+    buttons: Vec<NativeAlertActionButton>,
+    detached: Option<bool>,
+) {
+    macos_bridge::open_alert_dialog(id, title, description, buttons, detached);
+}
+
+#[tauri::command]
+pub async fn close_alert_dialog(_app: tauri::AppHandle, id: String) -> Result<(), String> {
+    macos_bridge::close_alert_dialog(id);
+    Ok(())
 }
 
 #[tauri::command]

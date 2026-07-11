@@ -17,6 +17,7 @@ import { Route as rootPanelRouteImport } from './routes/(root)/panel'
 import { Route as rootModalRouteImport } from './routes/(root)/modal'
 import { Route as rootMenuRouteImport } from './routes/(root)/menu'
 import { Route as rootAppleIntelligenceRouteImport } from './routes/(root)/apple-intelligence'
+import { Route as rootAlertRouteImport } from './routes/(root)/alert'
 import { Route as WebviewsTrayIndexRouteImport } from './routes/webviews/tray/index'
 import { Route as WebviewsPopoverIndexRouteImport } from './routes/webviews/popover/index'
 import { Route as WebviewsModalIndexRouteImport } from './routes/webviews/modal/index'
@@ -62,6 +63,11 @@ const rootAppleIntelligenceRoute = rootAppleIntelligenceRouteImport.update({
   path: '/apple-intelligence',
   getParentRoute: () => rootRouteImport,
 } as any)
+const rootAlertRoute = rootAlertRouteImport.update({
+  id: '/(root)/alert',
+  path: '/alert',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WebviewsTrayIndexRoute = WebviewsTrayIndexRouteImport.update({
   id: '/webviews/tray/',
   path: '/webviews/tray/',
@@ -84,6 +90,7 @@ const WebviewsPanelIdRoute = WebviewsPanelIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/alert': typeof rootAlertRoute
   '/apple-intelligence': typeof rootAppleIntelligenceRoute
   '/menu': typeof rootMenuRoute
   '/modal': typeof rootModalRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/webviews/tray': typeof WebviewsTrayIndexRoute
 }
 export interface FileRoutesByTo {
+  '/alert': typeof rootAlertRoute
   '/apple-intelligence': typeof rootAppleIntelligenceRoute
   '/menu': typeof rootMenuRoute
   '/modal': typeof rootModalRoute
@@ -113,6 +121,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/(root)/alert': typeof rootAlertRoute
   '/(root)/apple-intelligence': typeof rootAppleIntelligenceRoute
   '/(root)/menu': typeof rootMenuRoute
   '/(root)/modal': typeof rootModalRoute
@@ -129,6 +138,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/alert'
     | '/apple-intelligence'
     | '/menu'
     | '/modal'
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/webviews/tray'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/alert'
     | '/apple-intelligence'
     | '/menu'
     | '/modal'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/webviews/tray'
   id:
     | '__root__'
+    | '/(root)/alert'
     | '/(root)/apple-intelligence'
     | '/(root)/menu'
     | '/(root)/modal'
@@ -172,6 +184,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  rootAlertRoute: typeof rootAlertRoute
   rootAppleIntelligenceRoute: typeof rootAppleIntelligenceRoute
   rootMenuRoute: typeof rootMenuRoute
   rootModalRoute: typeof rootModalRoute
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof rootAppleIntelligenceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(root)/alert': {
+      id: '/(root)/alert'
+      path: '/alert'
+      fullPath: '/alert'
+      preLoaderRoute: typeof rootAlertRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/webviews/tray/': {
       id: '/webviews/tray/'
       path: '/webviews/tray'
@@ -276,6 +296,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  rootAlertRoute: rootAlertRoute,
   rootAppleIntelligenceRoute: rootAppleIntelligenceRoute,
   rootMenuRoute: rootMenuRoute,
   rootModalRoute: rootModalRoute,

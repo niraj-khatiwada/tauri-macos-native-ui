@@ -62,6 +62,8 @@ pub fn run() {
             commands::close_window_as_modal_sheet,
             commands::is_tray_popover_visible,
             commands::resize_tray_popover,
+            commands::open_alert_dialog,
+            commands::close_alert_dialog,
             commands::show_ai_glow_effect,
             commands::hide_ai_glow_effect,
             commands::focus_or_create_main_window,
