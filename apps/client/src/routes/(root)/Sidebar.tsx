@@ -5,7 +5,7 @@ const navigationItems = [
   {
     name: "Menu",
     path: "/menu",
-    icon: <Icon name="chat-bubble" />,
+    icon: <Icon name="menu" />,
   },
   {
     name: "Popover",
@@ -13,7 +13,11 @@ const navigationItems = [
     icon: <Icon name="chat-bubble" />,
   },
   { name: "Panel", path: "/panel", icon: <Icon name="rectangle" /> },
-  { name: "Modal", path: "/modal", icon: <Icon name="rectangle" /> },
+  {
+    name: "Modal",
+    path: "/modal",
+    icon: <Icon name="rectangle" className="rotate-90" />,
+  },
   { name: "Toast", path: "/toast", icon: <Icon name="toast" /> },
   { name: "Tooltip", path: "/tooltip", icon: <Icon name="chat-bubble" /> },
   { name: "Alert", path: "/alert", icon: <Icon name="bell" /> },

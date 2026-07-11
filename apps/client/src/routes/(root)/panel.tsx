@@ -13,8 +13,17 @@ function Panel() {
   const handleWindowPanelShow = async (
     evt: any,
     panelId: string,
-    liquidGlassEffect = false,
+    options: {
+      showOnAllSpaces: boolean;
+      alwaysOnTop: boolean;
+      liquidGlassEffect: boolean;
+    } = {
+      showOnAllSpaces: false,
+      alwaysOnTop: false,
+      liquidGlassEffect: false,
+    },
   ) => {
+    console.log(options);
     const rect = evt.target.getBoundingClientRect();
     invoke("open_window_panel", {
       panelId,
@@ -22,7 +31,7 @@ function Panel() {
       y: rect.bottom + titlebarHeight,
       width: 500,
       height: 300,
-      liquidGlassEffect,
+      ...options,
     });
   };
 
@@ -53,7 +62,13 @@ function Panel() {
         </div>
         <div className="w-full flex items-center justify-center gap-2 overflow-y-auto text-white mt-10">
           <button
-            onClick={(evt) => handleWindowPanelShow(evt, "2", true)}
+            onClick={(evt) =>
+              handleWindowPanelShow(evt, "2", {
+                alwaysOnTop: true,
+                liquidGlassEffect: true,
+                showOnAllSpaces: false,
+              })
+            }
             className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
           >
             Open Window Panel 2

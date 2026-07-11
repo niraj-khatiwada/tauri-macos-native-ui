@@ -104,6 +104,8 @@ pub mod ffi {
             windowRawPtr: *mut std::ffi::c_void,
             x: f64,
             y: f64,
+            showOnAllSpaces: bool,
+            alwaysOnTop: bool,
             liquidGlassEffect: bool,
         );
         fn closeWindowAsPanel(id: String);
@@ -328,6 +330,8 @@ pub fn show_window_as_panel(
     window: &WebviewWindow,
     x: f64,
     y: f64,
+    show_on_all_spaces: Option<bool>,
+    always_on_top: Option<bool>,
     liquid_glass_effect: Option<bool>,
 ) {
     if let Ok(ns_window_ptr) = window.ns_window() {
@@ -337,6 +341,8 @@ pub fn show_window_as_panel(
             raw_window_ptr,
             x,
             y,
+            show_on_all_spaces.unwrap_or(false),
+            always_on_top.unwrap_or(false),
             liquid_glass_effect.unwrap_or(false),
         );
     }

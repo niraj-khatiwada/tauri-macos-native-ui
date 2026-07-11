@@ -5,6 +5,7 @@ import Rectangle from "~/assets/icons/rectangle.svg?react";
 import Toast from "~/assets/icons/toast.svg?react";
 import AI from "~/assets/icons/ai.svg?react";
 import Bell from "~/assets/icons/bell.svg?react";
+import Menu from "~/assets/icons/menu.svg?react";
 
 type SVGAsComponent = React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
 
@@ -20,6 +21,7 @@ const registry = asRegistry({
   toast: Toast,
   ai: AI,
   bell: Bell,
+  menu: Menu,
 });
 
 export default registry;

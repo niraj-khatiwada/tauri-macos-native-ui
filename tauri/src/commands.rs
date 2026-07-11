@@ -114,6 +114,8 @@ pub fn open_window_panel(
     y: f64,
     width: f64,
     height: f64,
+    show_on_all_spaces: Option<bool>,
+    always_on_top: Option<bool>,
     liquid_glass_effect: Option<bool>,
 ) {
     let position = current_window.outer_position().unwrap();
@@ -135,6 +137,8 @@ pub fn open_window_panel(
             target_y,
             width,
             height,
+            show_on_all_spaces,
+            always_on_top,
             liquid_glass_effect,
         );
     }
@@ -148,6 +152,8 @@ fn create_fresh_panel(
     target_y: f64,
     width: f64,
     height: f64,
+    show_on_all_spaces: Option<bool>,
+    always_on_top: Option<bool>,
     liquid_glass_effect: Option<bool>,
 ) {
     let panel = domain::AppWindow::Panel;
@@ -175,6 +181,8 @@ fn create_fresh_panel(
                 &window,
                 target_x,
                 target_y,
+                show_on_all_spaces,
+                always_on_top,
                 liquid_glass_effect,
             );
         }
