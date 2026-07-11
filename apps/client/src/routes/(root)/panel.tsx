@@ -47,10 +47,18 @@ function Panel() {
       <div className="w-full flex flex-col items-center justify-center gap-2 overflow-y-auto text-white">
         <div className="w-full flex items-center justify-center gap-2 text-white text-xs">
           <button
-            onClick={(evt) => handleWindowPanelShow(evt, "1")}
+            onClick={(evt) =>
+              handleWindowPanelShow(evt, "1", {
+                alwaysOnTop: true,
+                liquidGlassEffect: false,
+                showOnAllSpaces: true,
+              })
+            }
             className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
           >
             Open Window Panel 1
+            <br />
+            Always on Top
           </button>
 
           <button
@@ -58,13 +66,15 @@ function Panel() {
             className="bg-blue-600 px-4 py-1 rounded-md text-xs w-fit"
           >
             Close Window Panel 1
+            <br />
+            Always on Top
           </button>
         </div>
         <div className="w-full flex items-center justify-center gap-2 overflow-y-auto text-white mt-10">
           <button
             onClick={(evt) =>
               handleWindowPanelShow(evt, "2", {
-                alwaysOnTop: true,
+                alwaysOnTop: false,
                 liquidGlassEffect: true,
                 showOnAllSpaces: false,
               })

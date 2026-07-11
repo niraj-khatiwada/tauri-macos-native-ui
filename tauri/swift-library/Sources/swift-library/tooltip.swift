@@ -6,7 +6,7 @@ class TooltipManager {
 
     var activePanel: NSPanel?
     var activeController: TooltipViewController?
-    
+
     private var windowFocusObserver: NSObjectProtocol?
 
     func show(text: String, keys: [String], minX: Double, minY: Double) {
@@ -19,7 +19,7 @@ class TooltipManager {
         guard
             let parentWindow = NSApplication.shared.keyWindow ?? NSApplication.shared.windows.first
         else { return }
-        
+
         setupFocusObserver(for: parentWindow)
 
         let controller = TooltipViewController(text: text, keys: keys)
@@ -44,10 +44,10 @@ class TooltipManager {
 
         self.activePanel = panel
         self.activeController = controller
-        
+
         panel.alphaValue = 0.0
         panel.orderFrontRegardless()
-        
+
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.15
             context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
@@ -79,7 +79,7 @@ class TooltipManager {
 
     private func setupFocusObserver(for window: NSWindow) {
         removeFocusObserver()
-        
+
         windowFocusObserver = NotificationCenter.default.addObserver(
             forName: NSWindow.didResignKeyNotification,
             object: window,
@@ -116,12 +116,13 @@ class TooltipManager {
         parentWindow: NSWindow, size: NSSize, minX: Double, minY: Double
     ) -> NSRect {
         guard let parentContentView = parentWindow.contentView else { return .zero }
-        
+
         let localX = CGFloat(minX)
         let localY = parentContentView.bounds.height - CGFloat(minY)
-        
+
         let pointInWindow = parentContentView.convert(NSPoint(x: localX, y: localY), to: nil)
-        let pointInScreen = parentWindow.convertToScreen(NSRect(origin: pointInWindow, size: .zero)).origin
+        let pointInScreen = parentWindow.convertToScreen(NSRect(origin: pointInWindow, size: .zero))
+            .origin
 
         var panelX = pointInScreen.x - (size.width / 2)
         var panelY = pointInScreen.y + 8
@@ -176,7 +177,7 @@ class TooltipViewController: NSViewController {
         visualEffect.wantsLayer = true
         visualEffect.layer?.cornerRadius = 9.0
         visualEffect.layer?.borderWidth = 1.0
-        visualEffect.layer?.borderColor = NSColor(white: 1.0, alpha: 0.1).cgColor
+        visualEffect.layer?.borderColor = NSColor.separatorColor.cgColor
 
         container.addSubview(visualEffect)
 
@@ -202,7 +203,7 @@ class TooltipViewController: NSViewController {
         ])
 
         titleLabel.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
-        titleLabel.textColor = NSColor(white: 0.95, alpha: 1.0)
+        titleLabel.textColor = NSColor.labelColor
         stackView.addArrangedSubview(titleLabel)
 
         self.view = container
@@ -229,13 +230,13 @@ class TooltipViewController: NSViewController {
             let capContainer = NSView()
             capContainer.translatesAutoresizingMaskIntoConstraints = false
             capContainer.wantsLayer = true
-            capContainer.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.12).cgColor
+            capContainer.layer?.backgroundColor = NSColor.textColor.withAlphaComponent(0.08).cgColor
             capContainer.layer?.cornerRadius = 5.0
 
             let capLabel = NSTextField(labelWithString: key)
             capLabel.translatesAutoresizingMaskIntoConstraints = false
             capLabel.font = NSFont.systemFont(ofSize: 11, weight: .medium)
-            capLabel.textColor = NSColor(white: 0.85, alpha: 1.0)
+            capLabel.textColor = NSColor.secondaryLabelColor
             capLabel.alignment = .center
 
             capContainer.addSubview(capLabel)

@@ -30,7 +30,7 @@ const navigationItems = [
 
 export function Sidebar() {
   return (
-    <aside className="w-full h-screen bg-[#F5F5F7]/90 dark:bg-[#1E1E1F]/20 border-r border-[#E5E5EA] dark:border-[#2C2C2E] flex flex-col justify-between py-4 px-2 select-none font-sans antialiased">
+    <aside className="w-full h-screen bg-[#F5F5F7]/20 dark:bg-[#1E1E1F]/20 border-r border-[#E5E5EA] dark:border-[#2C2C2E] flex flex-col justify-between py-4 px-2 select-none font-sans antialiased">
       <div className="space-y-6">
         <nav className="space-y-0.5">
           {navigationItems.map((item) => {
@@ -41,7 +41,7 @@ export function Sidebar() {
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors duration-150 group outline-none text-white bg-blue-600"
                 inactiveProps={{
                   className:
-                    "text-[#3A3A3C] dark:text-zinc-100 dark:bg-transparent",
+                    "text-[#3A3A3C] text-zinc-800 dark:text-zinc-100 bg-transparent",
                 }}
               >
                 <div className="-mb-0.5">{item.icon}</div>
