@@ -38,3 +38,7 @@ Note: If you're using beta version of XCode, you need to run this command before
 ```
 sudo xcode-select -s /Applications/Xcode-beta.app/Contents/Developer
 ```
+And, then use this command to create release build:
+```
+make build.macos
+```

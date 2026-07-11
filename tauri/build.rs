@@ -12,7 +12,12 @@ fn main() {
 
         compile_swift();
 
-        println!("cargo:rustc-link-lib=static=swift-library");
+        // println!("cargo:rustc-link-lib=static=swift-library");
+        let swift_lib_path = swift_library_static_lib_dir().join("libswift-library.a");
+        println!(
+            "cargo:rustc-link-arg=-Wl,-force_load,{}",
+            swift_lib_path.to_str().unwrap()
+        );
         println!(
             "cargo:rustc-link-search={}",
             swift_library_static_lib_dir().to_str().unwrap()
@@ -42,10 +47,27 @@ fn main() {
 }
 
 fn compile_swift() {
-    let swift_package_dir = manifest_dir().join("swift-library");
+    // let swift_package_dir = manifest_dir().join("swift-library");
 
+    // let mut cmd = Command::new("swift");
+    // cmd.current_dir(swift_package_dir).arg("build").args(&[
+    //     "-Xswiftc",
+    //     "-import-objc-header",
+    //     "-Xswiftc",
+    //     swift_source_dir()
+    //         .join("bridging-header.h")
+    //         .to_str()
+    //         .unwrap(),
+    // ]);
+
+    // if is_release_build() {
+    //     cmd.args(&["-c", "release"]);
+    // }
+    let swift_package_dir = manifest_dir().join("swift-library");
     let mut cmd = Command::new("swift");
     cmd.current_dir(swift_package_dir).arg("build").args(&[
+        "--build-system",
+        "native",
         "-Xswiftc",
         "-import-objc-header",
         "-Xswiftc",
@@ -54,7 +76,6 @@ fn compile_swift() {
             .to_str()
             .unwrap(),
     ]);
-
     if is_release_build() {
         cmd.args(&["-c", "release"]);
     }
@@ -98,12 +119,31 @@ fn generated_code_dir() -> PathBuf {
     swift_source_dir().join("generated")
 }
 
-fn swift_library_static_lib_dir() -> PathBuf {
-    let debug_or_release = if is_release_build() {
-        "release"
-    } else {
-        "debug"
-    };
+// fn swift_library_static_lib_dir() -> PathBuf {
+//     let debug_or_release = if is_release_build() {
+//         "release"
+//     } else {
+//         "debug"
+//     };
 
-    manifest_dir().join(format!("swift-library/.build/{}", debug_or_release))
+//     manifest_dir().join(format!("swift-library/.build/{}", debug_or_release))
+// }
+fn swift_library_static_lib_dir() -> PathBuf {
+    let swift_package_dir = manifest_dir().join("swift-library");
+    let mut cmd = Command::new("swift");
+    cmd.current_dir(&swift_package_dir)
+        .args(&["build", "--build-system", "native"]);
+    if is_release_build() {
+        cmd.args(&["-c", "release"]);
+    }
+    cmd.arg("--show-bin-path");
+
+    let output = cmd
+        .output()
+        .expect("failed to run swift build --show-bin-path");
+    PathBuf::from(
+        String::from_utf8(output.stdout)
+            .expect("non-utf8 output")
+            .trim(),
+    )
 }
