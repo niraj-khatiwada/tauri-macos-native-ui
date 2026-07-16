@@ -6,6 +6,7 @@ import Toast from "~/assets/icons/toast.svg?react";
 import AI from "~/assets/icons/ai.svg?react";
 import Bell from "~/assets/icons/bell.svg?react";
 import Menu from "~/assets/icons/menu.svg?react";
+import Home from "~/assets/icons/home.svg?react";
 
 type SVGAsComponent = React.FunctionComponent<React.SVGProps<SVGSVGElement>>;
 
@@ -16,6 +17,7 @@ function asRegistry<T extends string>(
 }
 
 const registry = asRegistry({
+  home: Home,
   "chat-bubble": ChatBubble,
   rectangle: Rectangle,
   toast: Toast,

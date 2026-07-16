@@ -24,18 +24,22 @@ export interface NativeAlertPayload {
 
 function Modal() {
   const handleWindowAsModalSheetOpen = async (detached = false) => {
-    await invoke("open_alert_dialog", {
-      id: "psroject_deletion_check",
-      title: "Are you absolutely sure?",
-      description:
-        "This action cannot be undone. You will lose all saved workspace state history.",
-      buttons: [
-        { id: "cancel_btn", label: "Keep Project", type: "info" },
-        { id: "delete_btn", label: "Delete Permanently", type: "warning" },
-        { id: "cancel_btn", label: "Cancel", type: "default" },
-      ],
-      detached,
-    } satisfies NativeAlertPayload);
+    try {
+      await invoke("open_alert_dialog", {
+        id: "psroject_deletion_check",
+        title: "Are you absolutely sure?",
+        description:
+          "This action cannot be undone. You will lose all saved workspace state history.",
+        buttons: [
+          { id: "cancel_btn", label: "Keep Project", type: "info" },
+          { id: "delete_btn", label: "Delete Permanently", type: "warning" },
+          { id: "cancel_btn", label: "Cancel", type: "default" },
+        ],
+        detached,
+      } satisfies NativeAlertPayload);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (

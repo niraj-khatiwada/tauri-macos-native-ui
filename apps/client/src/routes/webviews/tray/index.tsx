@@ -18,8 +18,8 @@ export default function TrayWindow() {
 
   const handleResize = () => {
     invoke("resize_tray_popover", {
-      width: 500,
-      height: 900,
+      width: Math.max(400, Math.random() * 600),
+      height: Math.max(400, Math.random() * 600),
       animate: true,
       blurOverlayOnResize: true,
     });

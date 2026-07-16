@@ -45,6 +45,10 @@ class HoverResponsivePanel: NSPanel {
 }
 
 class WindowAsPanelSwiftDragHandleView: NSView {
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        return true
+    }
+
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
 

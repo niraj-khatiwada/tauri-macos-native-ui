@@ -59,6 +59,9 @@ pub mod ffi {
     }
 
     extern "Swift" {
+        // window
+        fn resizeWindow(nsWindowPtr: *mut std::ffi::c_void, width: f64, height: f64);
+
         // native menu
         fn openNativeMenu(x: f64, y: f64, itemsJson: String, focusParentWindow: bool);
         fn closeNativeMenu();
@@ -83,6 +86,12 @@ pub mod ffi {
             childWindowRawPtr: *mut std::ffi::c_void,
             width: f64,
             height: f64,
+        );
+        fn resizeWindowAsModalSheet(
+            width: f64,
+            height: f64,
+            animate: bool,
+            blurOverlayOnResize: bool,
         );
         fn closeWindowAsModalSheet();
 
@@ -132,10 +141,6 @@ pub mod ffi {
         // haptic
         fn triggerTrackpadHaptic(intensity: f64, sharpness: f64);
 
-        // apple intelligence flow effect using swiftui
-        fn showAIGlowEffect();
-        fn hideAIGlowEffect();
-
     }
 }
 
@@ -158,6 +163,15 @@ pub fn hide_traffic_light_buttons(window: &tauri::WebviewWindow<tauri::Wry>) {
                 zoom_btn.setHidden(true);
             }
         }
+    }
+}
+
+// window related functions
+#[cfg(target_os = "macos")]
+pub fn resize_window(window: &WebviewWindow, width: f64, height: f64) {
+    if let Ok(ns_window_ptr) = window.ns_window() {
+        let raw_window_ptr = ns_window_ptr as *mut c_void;
+        ffi::resizeWindow(raw_window_ptr, width, height);
     }
 }
 
@@ -442,6 +456,21 @@ pub fn open_window_as_modal_sheet(
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
+pub fn resize_window_as_modal_sheet(
+    width: f64,
+    height: f64,
+    animate: Option<bool>,
+    blur_overlay_on_resize: Option<bool>,
+) {
+    ffi::resizeWindowAsModalSheet(
+        width,
+        height,
+        animate.unwrap_or(false),
+        blur_overlay_on_resize.unwrap_or(false),
+    )
+}
+
 pub fn close_window_as_modal_sheet() {
     ffi::closeWindowAsModalSheet();
 }
@@ -492,15 +521,4 @@ pub fn close_alert_dialog(id: String) {
 #[cfg(target_os = "macos")]
 pub fn trigger_trackpad_haptic(intensity: Option<f64>, sharpness: Option<f64>) {
     ffi::triggerTrackpadHaptic(intensity.unwrap_or(0.85), sharpness.unwrap_or(1.0));
-}
-
-// apple intelligence glow effect
-#[cfg(target_os = "macos")]
-pub fn show_ai_glow_effect() {
-    ffi::showAIGlowEffect();
-}
-
-#[cfg(target_os = "macos")]
-pub fn hide_ai_glow_effect() {
-    ffi::hideAIGlowEffect();
 }

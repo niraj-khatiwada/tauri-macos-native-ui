@@ -3,6 +3,11 @@ import Icon from "~/components/Icon";
 
 const navigationItems = [
   {
+    name: "Home",
+    path: "/",
+    icon: <Icon name="home" />,
+  },
+  {
     name: "Menu",
     path: "/menu",
     icon: <Icon name="menu" />,
@@ -21,11 +26,6 @@ const navigationItems = [
   { name: "Toast", path: "/toast", icon: <Icon name="toast" /> },
   { name: "Tooltip", path: "/tooltip", icon: <Icon name="chat-bubble" /> },
   { name: "Alert", path: "/alert", icon: <Icon name="bell" /> },
-  {
-    name: "Apple Intelligence",
-    path: "/apple-intelligence",
-    icon: <Icon name="ai" />,
-  },
 ];
 
 export function Sidebar() {

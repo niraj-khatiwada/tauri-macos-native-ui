@@ -23,7 +23,6 @@ function Panel() {
       liquidGlassEffect: false,
     },
   ) => {
-    console.log(options);
     const rect = evt.target.getBoundingClientRect();
     invoke("open_window_panel", {
       panelId,

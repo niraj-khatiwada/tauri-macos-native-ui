@@ -6,6 +6,8 @@ private final class TrayPopoverStorage {
     static var popover: NSPopover? = nil
     static var statusButton: NSStatusBarButton? = nil
     static var delegate: TrayPopoverDelegateHandler? = nil
+    static var clickMonitor: Any? = nil
+    static var globalClickMonitor: Any? = nil
 }
 
 private struct TraySendablePointers: @unchecked Sendable {
@@ -16,10 +18,18 @@ private struct TraySendablePointers: @unchecked Sendable {
 class TrayPopoverDelegateHandler: NSObject, NSPopoverDelegate {
     func popoverDidShow(_ notification: Notification) {
         tray_popover_event(.Opened)
+
+        MainActor.assumeIsolated {
+            TrayPopoverDelegateHandler.setupOutsideClickMonitors()
+        }
     }
 
     func popoverDidClose(_ notification: Notification) {
         tray_popover_event(.Closed)
+
+        MainActor.assumeIsolated {
+            TrayPopoverDelegateHandler.removeOutsideClickMonitors()
+        }
     }
 
     func popoverShouldClose(_ popover: NSPopover) -> Bool {
@@ -28,6 +38,47 @@ class TrayPopoverDelegateHandler: NSObject, NSPopoverDelegate {
             controller.view.alphaValue = 1.0
         }
         return true
+    }
+
+    @MainActor
+    static func setupOutsideClickMonitors() {
+        removeOutsideClickMonitors()
+
+        guard let popover = TrayPopoverStorage.popover,
+            let popoverWindow = popover.contentViewController?.view.window
+        else { return }
+
+        TrayPopoverStorage.clickMonitor = NSEvent.addLocalMonitorForEvents(matching: [
+            .leftMouseDown, .rightMouseDown,
+        ]) { event in
+            let mouseLocation = NSEvent.mouseLocation
+            if !NSMouseInRect(mouseLocation, popoverWindow.frame, false) {
+                DispatchQueue.main.async {
+                    closeTrayPopover()
+                }
+            }
+            return event
+        }
+
+        TrayPopoverStorage.globalClickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [
+            .leftMouseDown, .rightMouseDown,
+        ]) { _ in
+            DispatchQueue.main.async {
+                closeTrayPopover()
+            }
+        }
+    }
+
+    @MainActor
+    static func removeOutsideClickMonitors() {
+        if let monitor = TrayPopoverStorage.clickMonitor {
+            NSEvent.removeMonitor(monitor)
+            TrayPopoverStorage.clickMonitor = nil
+        }
+        if let globalMonitor = TrayPopoverStorage.globalClickMonitor {
+            NSEvent.removeMonitor(globalMonitor)
+            TrayPopoverStorage.globalClickMonitor = nil
+        }
     }
 }
 

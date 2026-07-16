@@ -7,8 +7,12 @@ use tauri::{AppHandle, Manager, WebviewWindow};
 use tauri::{WebviewUrl, WebviewWindowBuilder};
 
 #[tauri::command]
+pub fn resize_window(window: WebviewWindow, width: f64, height: f64) {
+    macos_bridge::resize_window(&window, width, height)
+}
+
+#[tauri::command]
 pub fn open_native_menu(
-    _app: tauri::AppHandle,
     x: f64,
     y: f64,
     items: Vec<Value>,
@@ -252,6 +256,16 @@ pub fn open_window_as_modal_sheet(
 }
 
 #[tauri::command]
+pub fn resize_window_as_modal_sheet(
+    width: f64,
+    height: f64,
+    animate: Option<bool>,
+    blur_overlay_on_resize: Option<bool>,
+) {
+    macos_bridge::resize_window_as_modal_sheet(width, height, animate, blur_overlay_on_resize);
+}
+
+#[tauri::command]
 pub fn close_window_as_modal_sheet() {
     macos_bridge::close_window_as_modal_sheet();
 }
@@ -400,14 +414,4 @@ pub fn focus_or_create_main_window(app_handle: tauri::AppHandle) -> Result<(), S
 #[tauri::command]
 pub fn quit_app(app_handle: AppHandle) {
     app_handle.exit(0);
-}
-
-#[tauri::command]
-pub fn show_ai_glow_effect() {
-    macos_bridge::show_ai_glow_effect();
-}
-
-#[tauri::command]
-pub fn hide_ai_glow_effect() {
-    macos_bridge::hide_ai_glow_effect();
 }

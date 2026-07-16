@@ -11,6 +11,7 @@ type MenuItem = {
   id: string;
   title: string;
   disabled?: boolean;
+  checked?: boolean;
   items?: MenuItem[];
 };
 
@@ -49,11 +50,17 @@ function Menu() {
 
     const menuData: MenuItem[] = [
       { id: "cut", title: "Cut" },
-      { id: "copy", title: "Copy" },
+      { id: "disabled", title: "Enable", checked: true },
       {
         id: "settings",
         title: "Preferences",
-        items: [{ id: "theme", title: "Toggle Dark Mode" }],
+        items: [
+          {
+            id: "theme",
+            title: "Toggle Dark Mode",
+            items: [{ id: "theme2", title: "Toggle Dark Mode" }],
+          },
+        ],
       },
     ];
 

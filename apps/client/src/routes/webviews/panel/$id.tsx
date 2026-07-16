@@ -1,5 +1,4 @@
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -17,17 +16,10 @@ export default function PanelWindow() {
   };
 
   const handleResizePanel = async () => {
-    const appWindow = getCurrentWindow();
-
-    const [scaleFactor, outerSize] = await Promise.all([
-      appWindow.scaleFactor(),
-      appWindow.outerSize(),
-    ]);
-    const outerSizeLogical = outerSize.toLogical(scaleFactor);
     invoke("resize_window_panel", {
       panelId,
-      width: outerSizeLogical.width === 500 ? 800 : 500,
-      height: outerSizeLogical.height === 300 ? 600 : 300,
+      width: Math.max(200, Math.random() * 1000),
+      height: Math.max(200, Math.random() * 1000),
       animate: true,
       blurOverlayOnResize: true,
     });

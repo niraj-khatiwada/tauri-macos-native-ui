@@ -43,6 +43,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
+            commands::resize_window,
             commands::open_native_menu,
             commands::open_window_popover,
             commands::close_window_popover,
@@ -59,15 +60,14 @@ pub fn run() {
             commands::open_tray_popover,
             commands::close_tray_popover,
             commands::open_window_as_modal_sheet,
+            commands::resize_window_as_modal_sheet,
             commands::close_window_as_modal_sheet,
             commands::is_tray_popover_visible,
             commands::resize_tray_popover,
             commands::open_alert_dialog,
             commands::close_alert_dialog,
-            commands::show_ai_glow_effect,
-            commands::hide_ai_glow_effect,
             commands::focus_or_create_main_window,
-            commands::quit_app
+            commands::quit_app,
         ])
         .setup(|app| {
             let app_handle = app.handle();
